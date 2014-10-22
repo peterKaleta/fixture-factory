@@ -1,0 +1,31 @@
+{
+  "camelcase": true,
+  "curly": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "freeze": true,
+  "funcscope": true,
+  "globals": {
+    "require": true,
+    "module": true,
+    "describe": true,
+    "it": true,
+    "beforeEach": true,
+    "expect": true
+  },
+  "globalstrict": true,
+  "immed": true,
+  "indent": 2,
+  "latedef": true,
+  "maxdepth": 3,
+  "maxlen": 100,
+  "newcap": true,
+  "node": true,
+  "noempty": true,
+  "nonew": true,
+  "quotmark": true,
+  "strict": true,
+  "trailing": true,
+  "unused": "vars",
+  "expr": true
+}

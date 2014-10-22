@@ -1,0 +1,22 @@
+{
+  "name": "fixture-factory",
+  "version": "0.1.0",
+  "description": "Factory for faker.js fixture generator",
+  "license": "MIT",
+  "author": "Peter Kaleta <mail@peterkaleta.com> (peterkaleta.com)",
+  "scripts": {
+    "test": "jshint . && jscs . && mocha"
+  },
+  "devDependencies": {
+    "chai": "^1.9.2",
+    "chai-things": "^0.2.0",
+    "jscs": "^1.7.3",
+    "mocha": "^2.0.0",
+    "sinon": "^1.10.3",
+    "sinon-chai": "^2.6.0"
+  },
+  "dependencies": {
+    "faker": "^2.0.1",
+    "lodash": "^2.4.1"
+  }
+}
