@@ -1,6 +1,6 @@
 # fixture-factory
 
-Generate massive amounts of fixtures based on prdefined model using [faker.js](https://github.com/marak/Faker.js/) methods.
+Generate massive amounts of fixtures based on predefined model using [faker.js](https://github.com/marak/Faker.js/) methods.
 
 ## Installation
 ```npm install fixture-factory --save-dev```
@@ -15,7 +15,7 @@ var FixtureFactory = require('fixture-factory');
 var userDataModel = {
   firstName: 'name.firstName',
   lastName: 'name.lastName',
-};
+};prdefined
 
 var factory = new FixtureFactory(userDataModel);
 ```
