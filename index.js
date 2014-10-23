@@ -3,25 +3,34 @@
 var faker = require('faker');
 var _ = require('lodash');
 
-function FixtureFactory (dataModel) {
-  this.dataModel = dataModel;
+function FixtureFactory () {
+  this.dataModels = {};
 }
 
 FixtureFactory.prototype = {
 
-  generateSingle: function (properties) {
+  noConflict: function () {
+    return new FixtureFactory();
+  },
+
+  register: function (key, dataModel) {
+    this.dataModels[key] = dataModel;
+  },
+
+  generateSingle: function (context, properties) {
+
+    var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
     var fixture = _.clone(properties) || {};
-    var self = this;
     var callStack;
     var nestedFakerMethod;
     var nextMethod;
     var isMethod;
     var fieldDataModel;
 
-    _.each(Object.keys(self.dataModel), function (key) {
+    _.each(Object.keys(dataModel), function (key) {
       if (!fixture[key]) {
 
-        fieldDataModel = self.dataModel[key];
+        fieldDataModel = dataModel[key];
 
         if (!_.isObject(fieldDataModel)) {
           fieldDataModel = {
@@ -54,14 +63,14 @@ FixtureFactory.prototype = {
     return fixture;
   },
 
-  generate: function (count, properties) {
+  generate: function (context, count, properties) {
     var fixtures = [];
     while (fixtures.length < count) {
-      fixtures.push(this.generateSingle(properties));
+      fixtures.push(this.generateSingle(context, properties));
     }
     return fixtures;
   }
 
 };
 
-module.exports = FixtureFactory;
+module.exports = new FixtureFactory();
