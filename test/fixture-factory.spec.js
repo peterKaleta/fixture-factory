@@ -18,6 +18,7 @@ var dataModel = {
   someField: 'name.firstName'
 };
 
+fixtureFactory.register('exampleModel', dataModel);
 
 describe('Fixture Factory', function () {
 
