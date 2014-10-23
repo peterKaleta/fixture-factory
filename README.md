@@ -7,39 +7,39 @@ Generate massive amounts of fixtures based on predefined model using [faker.js](
 
 ## Usage
 
-### Setup
+### Register your model
 
 ```
-var FixtureFactory = require('fixture-factory');
+var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
   firstName: 'name.firstName',
   lastName: 'name.lastName',
-};prdefined
+};
 
-var factory = new FixtureFactory(userDataModel);
+fixtureFactory('user', userDataModel);
 ```
 
 ### Generate single fixture
 
 ```
-factory.generateSingle();
+fixtureFactory.generate('user');
 ```
 
-will return
+will generate
 
 ```
-{
+[{
  firstName: <generated first name>,
  lastName: <generated last name>
-}
+}]
 ```
 
 ### Generate multiple fixtures
 ```
-factory.generate(10);
+fixtureFactory.generate('user', 10);
 ```
-will return
+will generate
 
 ```
 [{
@@ -49,16 +49,16 @@ will return
 ]
 ```
 
-### Generate single/multiple with extra fields
+### Generate with extra fields
 
 ```
-factory.generateSingle({
+fixtureFactory.generate('user',1 ,{
     type: 'admin',
     firstName: 'Daniel'
   });
 ```
 
-will return
+will generate
 
 ```
 {
@@ -68,6 +68,30 @@ will return
 }
 ```
 
+### Generate without registered model
+
+```
+fixtureFactory.generate({
+  email: 'internet.email'
+  });
+```
+will generate
+
+```
+[{
+ email: <generated email>
+}]
+```
+
+### Get your own instance
+In case you want to have multiple instances of factory you can call `noConflict`.
+
+```
+var fixtureFactory = require('fixture-factory');
+var secondFixtureFactory = fixtureFactory.noConflict();
+
+```
+
 ### Values in dataModel
 
 #### fixed field values
@@ -75,16 +99,16 @@ will return
 If defined method won't be found in  [faker.js](https://github.com/marak/Faker.js/) it will be treated as simple string to be used as field value
 
 ```
-var FixtureFactory = require('fixture-factory');
+var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
   staticField: 'someValue'
 };
 
-var factory = new FixtureFactory(userDataModel);
-factory.generateSingle();
+fixtureFactory.register('user', userDataModel);
+fixtureFactory.generateSingle();
 ```
-returns
+will generate
 ```
 {
  staticField: 'someValue'
@@ -96,7 +120,7 @@ returns
 if given method requires additional parameters you can pass it by adding `options` parameter
 
 ```
-var FixtureFactory = require('fixture-factory');
+var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
   age: {
@@ -108,14 +132,14 @@ var userDataModel = {
   }
 };
 
-var factory = new FixtureFactory(userDataModel);
-factory.generateSingle();
+fixtureFactory.register('user', userDataModel);
+fixtureFactory.generate();
 ```
-returns
+will generate
 ```
-{
+[{
  age: <number between 18 and 90>
-}
+}]
 ```
 
 
