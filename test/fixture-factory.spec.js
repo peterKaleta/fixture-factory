@@ -55,6 +55,15 @@ describe('Fixture Factory', function () {
     fixtures.should.all.have.property('otherField');
   });
 
+  it('should use passed parser functions to process fixture output', function () {
+    var fixture = fixtureFactory.generateOne('exampleModel', {
+      lastName: function () {
+        return 'sir';
+      }
+    });
+    expect(fixture.lastName).to.equal('sir');
+  });
+
   it('in case object is passed as context it should be used as model for generation', function () {
     var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
     expect(fixture.lastName).to.exist;

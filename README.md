@@ -71,16 +71,16 @@ will generate
 ### Generate without registered model
 
 ```
-fixtureFactory.generate({
+fixtureFactory.generateOne({
   email: 'internet.email'
   });
 ```
 will generate
 
 ```
-[{
+{
  email: <generated email>
-}]
+}
 ```
 
 ### Get your own instance
@@ -133,14 +133,45 @@ var userDataModel = {
 };
 
 fixtureFactory.register('user', userDataModel);
-fixtureFactory.generate();
+fixtureFactory.generateOne();
 ```
 will generate
 ```
-[{
+{
  age: <number between 18 and 90>
-}]
+}
 ```
+
+
+#### passing parser method
+
+you can pass parser method to change modify value of acquired fixture field
+
+```
+var fixtureFactory = require('fixture-factory');
+
+var userDataModel = {
+  firstName : 'name.firstName'
+};
+
+fixtureFactory.register('user', userDataModel);
+
+fixtureFactory.generateOne({
+  firstName: function (fixtureValue, options, dataModel, faker) {
+    return 'sir '+ fixtureValue;
+  }
+});
+
+```
+will generate
+```
+{
+ firstName: 'sir <some generated name>'
+}
+```
+
+
+
 
 
 ## TO DO
