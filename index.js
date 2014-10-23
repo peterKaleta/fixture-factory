@@ -56,6 +56,7 @@ FixtureFactory.prototype = {
 
   register: function (key, dataModel) {
     this.dataModels[key] = dataModel;
+    return this;
   },
 
   generate: function (context, count, properties) {
