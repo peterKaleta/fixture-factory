@@ -22,7 +22,12 @@ fixtureFactory.register('exampleModel', dataModel);
 
 describe('Fixture Factory', function () {
 
-  it('should generate multiple fixtures based on provided dataModel', function () {
+  it('should generate single fixture based on selected dataModel', function () {
+    var fixture = fixtureFactory.generateOne('exampleModel');
+    expect(fixture.someField).to.exist;
+  });
+
+  it('should generate array of fixtures based on selected dataModel', function () {
     var fixtures = fixtureFactory.generate('exampleModel', 10);
     expect(fixtures.length).to.equal(10);
     fixtures.should.all.have.property('someField');
@@ -44,14 +49,14 @@ describe('Fixture Factory', function () {
     fixtures.should.all.have.property('someField', 'other value');
   });
 
-  it('should add field with provided values if not present', function () {
+  it('should add field with provided values if it is not present in dataModel', function () {
     var fixtures = fixtureFactory.generate('exampleModel', 10, { otherField: 'other value' });
     fixtures.should.all.have.property('someField');
     fixtures.should.all.have.property('otherField');
   });
 
   it('in case object is passed as context it should be used as model for generation', function () {
-    var fixture = fixtureFactory.generate({ lastName: 'name.lastName' })[0];
+    var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
     expect(fixture.lastName).to.exist;
   });
 

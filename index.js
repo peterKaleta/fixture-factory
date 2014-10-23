@@ -58,6 +58,10 @@ FixtureFactory.prototype = {
     this.dataModels[key] = dataModel;
   },
 
+  generateOne: function (context, properties) {
+    return this.generate(context, properties)[0];
+  },
+
   generate: function (context, count, properties) {
     count = count || 1;
     var fixtures = [];
