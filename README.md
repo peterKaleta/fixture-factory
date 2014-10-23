@@ -157,7 +157,7 @@ var userDataModel = {
 fixtureFactory.register('user', userDataModel);
 
 fixtureFactory.generateOne({
-  firstName: function (fixtureValue, options, dataModel, faker) {
+  firstName: function ('user', fixtureValue, options, dataModel, faker) {
     return 'sir '+ fixtureValue;
   }
 });
