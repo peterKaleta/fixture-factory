@@ -34,12 +34,10 @@ var _handleString = function (model) {
     } else {
       isMethod = false;
       break;
-      }
     }
   }
 
-  return isMethod ? nestedFakerMethod(model.options || {}) :
-                    model.method;
+  return isMethod ? nestedFakerMethod( model.options || { }) : model.method;
 };
 
 var _generateField = function (key, method, fixture, dataModel) {
@@ -59,7 +57,6 @@ var _generateFixture = function (context, properties) {
 
   var collection = _.extend({}, dataModel, properties);
   var fns = {};
-  });
 
   _.each(collection, function (value, key) {
     value = properties[key] ? properties[key] : value;
