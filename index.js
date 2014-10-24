@@ -59,7 +59,7 @@ var _generateField = function (key, method, fixture, dataModel) {
       field = model.method;
   }
 
-  return result;
+  return field;
 };
 
 var _generateFixture = function (context, properties) {
