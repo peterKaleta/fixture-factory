@@ -34,6 +34,7 @@ var _handleString = function (model) {
     } else {
       isMethod = false;
       break;
+      }
     }
   }
 
@@ -55,13 +56,17 @@ var _generateFixture = function (context, properties) {
 
   var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
   var fixture = {};
+
   var collection = _.extend({}, dataModel, properties);
   var fns = {};
+  });
 
   _.each(collection, function (value, key) {
     value = properties[key] ? properties[key] : value;
 
+    var options;
     if (!_.isFunction(value) && !_.isFunction(value.method)) {
+      options = dataModel[key] ? dataModel[key].options || {} : {};
       fixture[key] = _generateField(key, value);
     } else {
       fns[key] = value;
@@ -73,6 +78,7 @@ var _generateFixture = function (context, properties) {
   });
 
   return fixture;
+
 };
 
 FixtureFactory.prototype = {
