@@ -8,31 +8,47 @@ function FixtureFactory () {
 }
 
 var _getFieldModel = function (method) {
-  return _.isObject(method) ? method : { method: method };
+  return !_.isFunction(method) && _.isObject(method) ? method : { method: method };
 };
 
-var _generateField = function (key, method) {
+var _handleFunction = function (model, fixture, dataModel) {
+  return model.method.call(
+    null,
+    fixture,
+    model.options || {},
+    dataModel,
+    faker
+  );
+};
 
-    var fieldDataModel = _getFieldModel(method);
-    var callStack = fieldDataModel.method.split('.');
-    var nestedFakerMethod = faker;
-    var isMethod = true;
-    var nextMethod;
+var _handleString = function (model) {
+  var callStack = model.method.split('.');
+  var nestedFakerMethod = faker;
+  var isMethod = true;
+  var nextMethod;
 
-    while (callStack.length) {
-      nextMethod = callStack.shift();
-      if (nestedFakerMethod[nextMethod]) {
-        nestedFakerMethod = nestedFakerMethod[nextMethod];
-      } else {
-        isMethod = false;
-        break;
+  while (callStack.length) {
+    nextMethod = callStack.shift();
+    if (nestedFakerMethod[nextMethod]) {
+      nestedFakerMethod = nestedFakerMethod[nextMethod];
+    } else {
+      isMethod = false;
+      break;
       }
     }
+  }
 
-    return isMethod ? nestedFakerMethod(fieldDataModel.options || {}) :
-                      fieldDataModel.method;
+  return isMethod ? nestedFakerMethod(model.options || {}) :
+                    model.method;
+};
 
-  };
+var _generateField = function (key, method, fixture, dataModel) {
+
+  var model = _getFieldModel(method);
+
+  return _.isFunction(model.method) ? _handleFunction(model, fixture, dataModel) :
+                                      _handleString(model);
+};
 
 var _generateFixture = function (context, properties) {
 
@@ -41,20 +57,24 @@ var _generateFixture = function (context, properties) {
   var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
   var fixture = {};
 
-  _.each(dataModel, function (value, key) {
-    fixture[key] = _generateField(key, value);
+  var collection = _.extend({}, dataModel, properties);
+  var fns = {};
   });
 
-  _.each(properties, function (fieldValue, key) {
+  _.each(collection, function (value, key) {
+    value = properties[key] ? properties[key] : value;
 
     var options;
-    if ( _.isFunction(fieldValue) ) {
+    if (!_.isFunction(value) && !_.isFunction(value.method)) {
       options = dataModel[key] ? dataModel[key].options || {} : {};
-      fixture[key] = fieldValue.call(null, fixture[key] || {}, options, dataModel, faker);
+      fixture[key] = _generateField(key, value);
     } else {
-      fixture[key] = fieldValue;
+      fns[key] = value;
     }
+  });
 
+  _.each(fns, function (value, key) {
+    fixture[key] = _generateField(key, value, fixture, dataModel);
   });
 
   return fixture;
@@ -68,7 +88,28 @@ FixtureFactory.prototype = {
   },
 
   register: function (key, dataModel) {
-    this.dataModels[key] = dataModel;
+    var models = key;
+    var _this = this;
+
+    if (typeof models === 'string') {
+      models = {};
+      models[key] = dataModel;
+    }
+
+    Object.keys(models).forEach(function (key) {
+      _this.dataModels[key] = models[key];
+    });
+
+    return this;
+  },
+
+  unregister: function (key) {
+    if (key) {
+      delete this.dataModels[key];
+    } else {
+      this.dataModels = {};
+    }
+
     return this;
   },
 

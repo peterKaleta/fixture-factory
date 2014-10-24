@@ -14,59 +14,212 @@ chai.should();
 var fixtureFactory = require('../index.js');
 var faker = require('faker');
 
-var dataModel = {
-  someField: 'name.firstName'
-};
-
-fixtureFactory.register('exampleModel', dataModel);
-
 describe('Fixture Factory', function () {
-
-  it('should generate single fixture based on selected dataModel', function () {
-    var fixture = fixtureFactory.generateOne('exampleModel');
-    expect(fixture.someField).to.exist;
-  });
-
-  it('should generate array of fixtures based on selected dataModel', function () {
-    var fixtures = fixtureFactory.generate('exampleModel', 10);
-    expect(fixtures.length).to.equal(10);
-    fixtures.should.all.have.property('someField');
-  });
-
-  it('should default to 1 as a count when not specified for generate multiple', function () {
-    var fixtures = fixtureFactory.generate('exampleModel');
-    expect(fixtures.length).to.equal(1);
-  });
-
-  it('should delegate field generation to faker.js', function () {
-    var spy = sinon.spy(faker.name, 'firstName');
-    fixtureFactory.generate('exampleModel', 10);
-    expect(spy).to.have.callCount(10);
-  });
-
-  it('should overwrite field with provided values if present', function () {
-    var fixtures = fixtureFactory.generate('exampleModel', 10, { someField: 'other value' });
-    fixtures.should.all.have.property('someField', 'other value');
-  });
-
-  it('should add field with provided values if it is not present in dataModel', function () {
-    var fixtures = fixtureFactory.generate('exampleModel', 10, { otherField: 'other value' });
-    fixtures.should.all.have.property('someField');
-    fixtures.should.all.have.property('otherField');
-  });
-
-  it('should use passed parser functions to process fixture output', function () {
-    var fixture = fixtureFactory.generateOne('exampleModel', {
-      lastName: function () {
-        return 'sir';
-      }
+  describe('Module', function () {
+    it('should have a register method', function () {
+      expect(fixtureFactory.register).to.be.a('function');
     });
-    expect(fixture.lastName).to.equal('sir');
+
+    it('should have a generate method', function () {
+      expect(fixtureFactory.generate).to.be.a('function');
+    });
+
+    it('should have a generateOne method', function () {
+      expect(fixtureFactory.generateOne).to.be.a('function');
+    });
+
+    it('should have a unregister method', function () {
+      expect(fixtureFactory.unregister).to.be.a('function');
+    });
+
+    it('should register a return itself on register', function () {
+      expect(fixtureFactory.register('..', {})).to.equal(fixtureFactory);
+    });
   });
 
-  it('in case object is passed as context it should be used as model for generation', function () {
-    var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
-    expect(fixture.lastName).to.exist;
+  describe('unit tests', function () {
+    describe('register', function () {
+      it('should return fixtureFactory service', function () {
+        expect(fixtureFactory.register('..', {})).to.equal(fixtureFactory);
+        fixtureFactory.unregister();
+      });
+
+      it('should register a single data model', function () {
+        fixtureFactory.register('test', {});
+
+        expect(fixtureFactory.dataModels.test).to.be.a('object');
+
+        fixtureFactory.unregister();
+      });
+
+      it('should register multiple data models via object', function () {
+        fixtureFactory.register({
+          one: {},
+          two: {}
+        });
+
+        expect(fixtureFactory.dataModels.one).to.be.a('object');
+        expect(fixtureFactory.dataModels.two).to.be.a('object');
+
+        fixtureFactory.unregister();
+      });
+    });
+
+    describe('unregister', function () {
+      it('should return fixtureFactory service', function () {
+        expect(fixtureFactory.unregister()).to.equal(fixtureFactory);
+      });
+
+      it('should unregister a single data model', function () {
+        fixtureFactory.register('test', {});
+        fixtureFactory.register('test2', {});
+
+        expect(fixtureFactory.dataModels.test).to.be.a('object');
+
+        fixtureFactory.unregister('test');
+
+        expect(fixtureFactory.dataModels).to.not.be.empty;
+
+        expect(fixtureFactory.dataModels.test2).to.be.a('object');
+      });
+
+      it('should unregister all data models if called with no arguments', function () {
+        fixtureFactory.register({
+          one: {},
+          two: {}
+        });
+
+        expect(fixtureFactory.dataModels.one).to.be.a('object');
+        expect(fixtureFactory.dataModels.two).to.be.a('object');
+        expect(fixtureFactory.dataModels).to.not.be.empty;
+
+        fixtureFactory.unregister();
+
+        expect(fixtureFactory.dataModels).to.be.empty;
+      });
+    });
   });
 
+  describe('integration tests', function () {
+    before(function () {
+      var dataModel = {
+        someField: 'name.firstName'
+      };
+
+      var dataModelWithFn = {
+        someField: function () {
+          return 'mam';
+        }
+      };
+
+      fixtureFactory.register('exampleModel', dataModel);
+      fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
+    });
+
+    after(function () {
+      fixtureFactory.unregister();
+    });
+
+    it('should generate single fixture based on selected dataModel', function () {
+      var fixture = fixtureFactory.generateOne('exampleModel');
+      expect(fixture.someField).to.exist;
+    });
+
+    it('should generate single fixture based on provided dataModel object', function () {
+      var fixture = fixtureFactory.generateOne({
+        someField: function () {
+          return 'mam';
+        }
+      });
+
+      expect(fixture.someField).to.exist;
+    });
+
+    it('should generate array of fixtures based on selected dataModel', function () {
+      var fixtures = fixtureFactory.generate('exampleModel', 10);
+      expect(fixtures.length).to.equal(10);
+      fixtures.should.all.have.property('someField');
+    });
+
+    it('should generate array of fixtures based on selected dataModel', function () {
+      var fixtures = fixtureFactory.generate(
+        {
+          someField: function () {
+            return 'mam';
+          }
+        },
+        10
+      );
+
+      expect(fixtures.length).to.equal(10);
+      fixtures.should.all.have.property('someField');
+    });
+
+    it('should default to 1 as a count when not specified for generate multiple', function () {
+      var fixtures = fixtureFactory.generate('exampleModel');
+      expect(fixtures.length).to.equal(1);
+    });
+
+    it('should delegate field generation to faker.js', function () {
+      var spy = sinon.spy(faker.name, 'firstName');
+      fixtureFactory.generate('exampleModel', 10);
+      expect(spy).to.have.callCount(10);
+    });
+
+    it('should overwrite field with provided values if present', function () {
+      var fixtures = fixtureFactory.generate('exampleModel', 10, { someField: 'other value' });
+      fixtures.should.all.have.property('someField', 'other value');
+    });
+
+    it('should add field with provided values if it is not present in dataModel', function () {
+      var fixtures = fixtureFactory.generate('exampleModel', 10, { otherField: 'other value' });
+      fixtures.should.all.have.property('someField');
+      fixtures.should.all.have.property('otherField');
+    });
+
+    it('should use passed parser functions to process fixture output', function () {
+      var fixture = fixtureFactory.generateOne('exampleModel', {
+        lastName: function () {
+          return 'sir';
+        }
+      });
+      expect(fixture.lastName).to.equal('sir');
+    });
+
+    it('should use functions in data model to process fixture output', function () {
+      var fixture = fixtureFactory.generateOne('exampleModelWithFn');
+      expect(fixture.someField).to.equal('mam');
+    });
+
+    it('should use functions in properties to overwrite function in data model', function () {
+      var fixture = fixtureFactory.generateOne('exampleModelWithFn', {
+        someField: function () {
+          return 'sir';
+        }
+      });
+
+      expect(fixture.someField).to.equal('sir');
+    });
+
+    it('should process static properties before functions', function () {
+      var fixture = fixtureFactory.generateOne({
+        fullName: function (fixture) {
+          expect(fixture).to.be.a('object');
+          expect(fixture.firstName).to.be.a('string');
+          expect(fixture.lastName).to.be.a('string');
+          return fixture.firstName + ' ' + fixture.lastName;
+        },
+        firstName: 'name.firstName',
+        lastName: 'name.lastName'
+      });
+
+      expect(fixture.fullName).to.equal(fixture.firstName + ' ' + fixture.lastName);
+    });
+
+    it('in case object is passed as context it should be used as model for generation',
+    function () {
+      var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
+      expect(fixture.lastName).to.exist;
+    });
+  });
 });

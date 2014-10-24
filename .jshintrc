@@ -11,6 +11,8 @@
     "describe": true,
     "it": true,
     "beforeEach": true,
+    "before": true,
+    "after": true,
     "expect": true
   },
   "globalstrict": true,
