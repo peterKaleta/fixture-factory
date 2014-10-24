@@ -23,16 +23,16 @@ fixtureFactory('user', userDataModel);
 ### Generate single fixture
 
 ```
-fixtureFactory.generate('user');
+fixtureFactory.generateOne('user');
 ```
 
 will generate
 
 ```
-[{
+{
  firstName: <generated first name>,
  lastName: <generated last name>
-}]
+}
 ```
 
 ### Generate multiple fixtures
@@ -106,12 +106,36 @@ var userDataModel = {
 };
 
 fixtureFactory.register('user', userDataModel);
-fixtureFactory.generateSingle();
+fixtureFactory.generateOne('user');
 ```
 will generate
 ```
 {
  staticField: 'someValue'
+}
+```
+
+#### functions
+
+You may define a function in the data model which will be processed after all other fixtures have been generated
+
+```
+var fixtureFactory = require('fixture-factory');
+
+var userDataModel = {
+  name: 'name.firstName',
+  email: function(fixtures) {
+    return fixtures.name + '@acme.com';
+  }
+};
+
+fixtureFactory.register('user', userDataModel);
+fixtureFactory.generateOne('user');
+```
+will generate
+```
+{
+ staticField: '<generated name>@acme.com'
 }
 ```
 
@@ -156,9 +180,9 @@ var userDataModel = {
 
 fixtureFactory.register('user', userDataModel);
 
-fixtureFactory.generateOne({
-  firstName: function ('user', fixtureValue, options, dataModel, faker) {
-    return 'sir '+ fixtureValue;
+fixtureFactory.generateOne('user', {
+  firstName: function (fixtures, options, dataModel, faker) {
+    return 'sir '+ faker.name.firstName();
   }
 });
 
