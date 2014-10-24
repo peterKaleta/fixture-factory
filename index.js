@@ -44,9 +44,22 @@ var _handleString = function (model) {
 var _generateField = function (key, method, fixture, dataModel) {
 
   var model = _getFieldModel(method);
+  var field;
+  
+  switch (typeof model.method) {
+    case 'function':
+      field = _handleFunction(model, fixture, dataModel);
+      break;
+    
+    case 'string':
+      field = _handleString(model);
+      break;
+      
+    default :
+      field = model.method;
+  }
 
-  return _.isFunction(model.method) ? _handleFunction(model, fixture, dataModel) :
-                                      _handleString(model);
+  return result;
 };
 
 var _generateFixture = function (context, properties) {
