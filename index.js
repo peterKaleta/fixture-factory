@@ -106,7 +106,7 @@ FixtureFactory.prototype = {
       generateOne: function(){
         self.generateOne.apply(self, _.union([key], arguments));
       }
-    }
+    };
   },
 
   register: function (key, dataModel) {
@@ -123,6 +123,10 @@ FixtureFactory.prototype = {
     });
 
     return this;
+  },
+
+  reset: function () {
+    this.unregister();
   },
 
   unregister: function (key) {
