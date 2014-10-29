@@ -121,10 +121,17 @@ describe('Fixture Factory', function () {
         testModelGenerator.generateOne();
         expect(fixtureFactory.generate).to.have.been.calledWith('testModel');
         expect(fixtureFactory.generateOne).to.have.been.calledWith('testModel');
-        
+
       });
 
+    });
 
+    describe('reset', function () {
+      it('should delegate to unregister', function () {
+        sinon.spy(fixtureFactory, 'unregister');
+        fixtureFactory.reset();
+        expect(fixtureFactory.unregister).to.have.been.called;
+      });
     });
   });
 
