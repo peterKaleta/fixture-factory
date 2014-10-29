@@ -32,9 +32,14 @@ describe('Fixture Factory', function () {
       expect(fixtureFactory.unregister).to.be.a('function');
     });
 
+    it('should have a getGenerator method', function () {
+      expect(fixtureFactory.getGenerator).to.be.a('function');
+    });
+
     it('should register a return itself on register', function () {
       expect(fixtureFactory.register('..', {})).to.equal(fixtureFactory);
     });
+
   });
 
   describe('unit tests', function () {
@@ -98,6 +103,29 @@ describe('Fixture Factory', function () {
         expect(fixtureFactory.dataModels).to.be.empty;
       });
     });
+
+    describe('getGenerator', function () {
+      it('should return object with delegated generate and generateOne functions', function () {
+        fixtureFactory.register('testModel', {});
+        var testModelGenerator = fixtureFactory.getGenerator('testModel');
+        expect(testModelGenerator.generate).to.be.a('function');
+        expect(testModelGenerator.generateOne).to.be.a('function');
+      });
+      it('should return object that delegates to factory method using set key', function () {
+        fixtureFactory.register('testModel', {});
+        var testModelGenerator = fixtureFactory.getGenerator('testModel');
+
+        sinon.spy(fixtureFactory, 'generate');
+        sinon.spy(fixtureFactory, 'generateOne');
+        testModelGenerator.generate();
+        testModelGenerator.generateOne();
+        expect(fixtureFactory.generate).to.have.been.calledWith('testModel');
+        expect(fixtureFactory.generateOne).to.have.been.calledWith('testModel');
+        
+      });
+
+
+    });
   });
 
   describe('integration tests', function () {
@@ -158,6 +186,15 @@ describe('Fixture Factory', function () {
     it('should default to 1 as a count when not specified for generate multiple', function () {
       var fixtures = fixtureFactory.generate('exampleModel');
       expect(fixtures.length).to.equal(1);
+    });
+
+    it('should allow to call generate without need to pass null in count', function () {
+      var fixtures = fixtureFactory.generate('exampleModel', {
+        someField: 'overwritenValue'
+      });
+
+      expect(fixtures[0].someField).to.equal('overwritenValue');
+
     });
 
     it('should delegate field generation to faker.js', function () {

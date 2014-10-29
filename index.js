@@ -44,16 +44,16 @@ var _generateField = function (key, method, fixture, dataModel) {
 
   var model = _getFieldModel(method);
   var field;
-  
+
   switch (typeof model.method) {
     case 'function':
       field = _handleFunction(model, fixture, dataModel);
       break;
-    
+
     case 'string':
       field = _handleString(model);
       break;
-      
+
     default :
       field = model.method;
   }
@@ -97,9 +97,21 @@ FixtureFactory.prototype = {
     return new FixtureFactory();
   },
 
+  getGenerator: function (key) {
+    var self = this;
+    return {
+      generate: function(){
+        self.generate.apply(self, _.union([key], arguments));
+      },
+      generateOne: function(){
+        self.generateOne.apply(self, _.union([key], arguments));
+      }
+    }
+  },
+
   register: function (key, dataModel) {
     var models = key;
-    var _this = this;
+    var self = this;
 
     if (typeof models === 'string') {
       models = {};
@@ -107,7 +119,7 @@ FixtureFactory.prototype = {
     }
 
     Object.keys(models).forEach(function (key) {
-      _this.dataModels[key] = models[key];
+      self.dataModels[key] = models[key];
     });
 
     return this;
@@ -123,6 +135,7 @@ FixtureFactory.prototype = {
     return this;
   },
 
+
   generateOne: function (context, properties) {
     return this.generate(context, 1, properties)[0];
   },
@@ -130,6 +143,12 @@ FixtureFactory.prototype = {
   generate: function (context, count, properties) {
     count = count || 1;
     var fixtures = [];
+
+    if(_.isObject(count)){
+        properties = count;
+        count = 1;
+    }
+
     while (fixtures.length < count) {
       fixtures.push(_generateFixture.call(this, context, properties));
     }
