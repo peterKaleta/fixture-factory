@@ -199,7 +199,6 @@ will generate
 
 
 ## TO DO
-- add support for nested models
 - add support for defining own generators
 
 ##LICENSE

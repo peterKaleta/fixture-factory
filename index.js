@@ -62,7 +62,6 @@ var _generateField = function (key, method, fixture, dataModel) {
 };
 
 var _generateFixture = function (context, properties) {
-
   properties = properties || {};
 
   var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
@@ -75,7 +74,9 @@ var _generateFixture = function (context, properties) {
     value = properties[key] ? properties[key] : value;
 
     var options;
-    if (!_.isFunction(value) && !_.isFunction(value.method)) {
+    if (_.isPlainObject(value) || _.isArray(value)) {
+      fixture[key] = value;
+    } else if (!_.isFunction(value) && !_.isFunction(value.method)) {
       options = dataModel[key] ? dataModel[key].options || {} : {};
       fixture[key] = _generateField(key, value);
     } else {
@@ -88,7 +89,6 @@ var _generateFixture = function (context, properties) {
   });
 
   return fixture;
-
 };
 
 FixtureFactory.prototype = {
@@ -155,6 +155,7 @@ FixtureFactory.prototype = {
     while (fixtures.length < count) {
       fixtures.push(_generateFixture.call(this, context, properties));
     }
+
     return fixtures;
   }
 };
