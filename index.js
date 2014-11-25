@@ -100,10 +100,10 @@ FixtureFactory.prototype = {
   getGenerator: function (key) {
     var self = this;
     return {
-      generate: function(){
+      generate: function () {
         self.generate.apply(self, _.union([key], arguments));
       },
-      generateOne: function(){
+      generateOne: function () {
         self.generateOne.apply(self, _.union([key], arguments));
       }
     };
@@ -139,7 +139,6 @@ FixtureFactory.prototype = {
     return this;
   },
 
-
   generateOne: function (context, properties) {
     return this.generate(context, 1, properties)[0];
   },
@@ -148,9 +147,9 @@ FixtureFactory.prototype = {
     count = count || 1;
     var fixtures = [];
 
-    if(_.isObject(count)){
-        properties = count;
-        count = 1;
+    if (_.isObject(count)) {
+      properties = count;
+      count = 1;
     }
 
     while (fixtures.length < count) {
@@ -158,7 +157,6 @@ FixtureFactory.prototype = {
     }
     return fixtures;
   }
-
 };
 
 module.exports = new FixtureFactory();

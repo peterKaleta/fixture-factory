@@ -201,7 +201,6 @@ describe('Fixture Factory', function () {
       });
 
       expect(fixtures[0].someField).to.equal('overwritenValue');
-
     });
 
     it('should delegate field generation to faker.js', function () {
@@ -260,10 +259,23 @@ describe('Fixture Factory', function () {
       expect(fixture.fullName).to.equal(fixture.firstName + ' ' + fixture.lastName);
     });
 
-    it('in case object is passed as context it should be used as model for generation',
-    function () {
+    it('in case object is passed as context it should be used as model for generation', function () {
       var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
       expect(fixture.lastName).to.exist;
+    });
+
+    it('should generate single model with nested child model', function () {
+      var childModel = fixtureFactory.generateOne({
+        firstName: 'name.firstName',
+        lastName: 'name.lastName'
+      });
+
+      var fixture = fixtureFactory.generateOne({
+        child: childModel
+      });
+
+      expect(fixture.child.firstName).to.exist;
+      expect(fixture.child.lastName).to.exist;
     });
   });
 });
