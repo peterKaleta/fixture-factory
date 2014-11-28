@@ -3,6 +3,7 @@
 // setup test env
 var chai = require('chai');
 var sinon = require('sinon');
+var _ = require('lodash');
 var sinonChai = require('sinon-chai');
 var chaiThings = require('chai-things');
 var expect = chai.expect;
@@ -147,8 +148,20 @@ describe('Fixture Factory', function () {
         }
       };
 
+      var uniqueModel = {
+        id: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 100,
+            _unique: true
+          }
+        }
+      };
+
       fixtureFactory.register('exampleModel', dataModel);
       fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
+      fixtureFactory.register('uniqueModel', uniqueModel);
     });
 
     after(function () {
@@ -265,5 +278,13 @@ describe('Fixture Factory', function () {
       var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
       expect(fixture.lastName).to.exist;
     });
+
+    it('should be able to generate unique fields', function () {
+      var fixtures = fixtureFactory.generate('uniqueModel', 50);
+      var ids = _.pluck(fixtures, 'id');
+
+      expect(_.uniq(ids).length).to.equal(ids.length);
+    });
+
   });
 });

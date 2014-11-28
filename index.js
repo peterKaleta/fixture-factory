@@ -40,7 +40,7 @@ var _handleString = function (model) {
   return isMethod ? nestedFakerMethod( model.options || { }) : model.method;
 };
 
-var _generateField = function (key, method, fixture, dataModel) {
+var _generateField = function (key, method, fixture, dataModel, generatedFixtures) {
 
   var model = _getFieldModel(method);
   var field;
@@ -58,10 +58,22 @@ var _generateField = function (key, method, fixture, dataModel) {
       field = model.method;
   }
 
+  // If the current field is unique, make sure
+  // that it is not duplicated
+  if (model.options && model.options._unique === true) {
+
+    // Check if current value exists in fixtures generated thus far
+    if (_.some(_.pluck(generatedFixtures, key), function (existingValue) {
+      return existingValue === field;
+    })) {
+      return _generateField.apply(null, arguments);
+    }
+  }    
+
   return field;
 };
 
-var _generateFixture = function (context, properties) {
+var _generateFixture = function (context, properties, generatedFixtures) {
 
   properties = properties || {};
 
@@ -74,17 +86,15 @@ var _generateFixture = function (context, properties) {
   _.each(collection, function (value, key) {
     value = properties[key] ? properties[key] : value;
 
-    var options;
     if (!_.isFunction(value) && !_.isFunction(value.method)) {
-      options = dataModel[key] ? dataModel[key].options || {} : {};
-      fixture[key] = _generateField(key, value);
+      fixture[key] = _generateField(key, value, undefined, undefined, generatedFixtures);
     } else {
       fns[key] = value;
     }
   });
 
   _.each(fns, function (value, key) {
-    fixture[key] = _generateField(key, value, fixture, dataModel);
+    fixture[key] = _generateField(key, value, fixture, dataModel, generatedFixtures);
   });
 
   return fixture;
@@ -100,11 +110,11 @@ FixtureFactory.prototype = {
   getGenerator: function (key) {
     var self = this;
     return {
-      generate: function(){
-        self.generate.apply(self, _.union([key], arguments));
+      generate: function () {
+        self.generate.apply(self, _.union([ key ], arguments));
       },
-      generateOne: function(){
-        self.generateOne.apply(self, _.union([key], arguments));
+      generateOne: function () {
+        self.generateOne.apply(self, _.union([ key ], arguments));
       }
     };
   },
@@ -139,7 +149,6 @@ FixtureFactory.prototype = {
     return this;
   },
 
-
   generateOne: function (context, properties) {
     return this.generate(context, 1, properties)[0];
   },
@@ -148,13 +157,13 @@ FixtureFactory.prototype = {
     count = count || 1;
     var fixtures = [];
 
-    if(_.isObject(count)){
-        properties = count;
-        count = 1;
+    if (_.isObject(count)) {
+      properties = count;
+      count = 1;
     }
 
     while (fixtures.length < count) {
-      fixtures.push(_generateFixture.call(this, context, properties));
+      fixtures.push(_generateFixture.call(this, context, properties, fixtures));
     }
     return fixtures;
   }
