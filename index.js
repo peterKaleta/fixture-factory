@@ -37,7 +37,7 @@ var _handleString = function (model) {
     }
   }
 
-  return isMethod ? nestedFakerMethod( model.options || { }) : model.method;
+  return isMethod ? nestedFakerMethod(_.cloneDeep(model.options || { })) : model.method;
 };
 
 var _generateField = function (key, method, fixture, dataModel, generatedFixtures) {
@@ -81,6 +81,15 @@ var _generateFixture = function (context, properties, generatedFixtures) {
   var fixture = {};
 
   var collection = _.extend({}, dataModel, properties);
+
+  // The ability to make multiple fields unique together 
+  // (think combined primary keys)
+  var uniqueFields;
+  if (collection._unique != null) {
+    uniqueFields = collection._unique;
+    delete collection._unique;
+  }
+
   var fns = {};
 
   _.each(collection, function (value, key) {
@@ -97,8 +106,19 @@ var _generateFixture = function (context, properties, generatedFixtures) {
     fixture[key] = _generateField(key, value, fixture, dataModel, generatedFixtures);
   });
 
-  return fixture;
+  if (uniqueFields) {
+    var nonUniqueFixtures = _.reduce(uniqueFields, function (fixturesLeft, field) {
+      return _.filter(fixturesLeft, function (generatedFixture) {
+        return generatedFixture[field] === fixture[field];
+      });
+    }, generatedFixtures);
 
+    if (nonUniqueFixtures.length > 0) {
+      return _generateFixture.apply(this, arguments);
+    }
+  }
+
+  return fixture;
 };
 
 FixtureFactory.prototype = {

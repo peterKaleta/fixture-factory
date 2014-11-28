@@ -159,9 +159,35 @@ describe('Fixture Factory', function () {
         }
       };
 
+      var combinedUnique = {
+        first: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 10
+          }
+        },
+        second: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 10
+          }
+        },
+        third: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 5
+          }
+        },
+        _unique: [ 'first', 'second' ]
+      };
+
       fixtureFactory.register('exampleModel', dataModel);
       fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
       fixtureFactory.register('uniqueModel', uniqueModel);
+      fixtureFactory.register('combinedUnique', combinedUnique);
     });
 
     after(function () {
@@ -284,6 +310,19 @@ describe('Fixture Factory', function () {
       var ids = _.pluck(fixtures, 'id');
 
       expect(_.uniq(ids).length).to.equal(ids.length);
+    });
+
+    it('should be able to generate combined unique fields', function () {
+      var fixtures = fixtureFactory.generate('combinedUnique', 100);
+      
+      var existing = {};
+      _.forEach(fixtures, function (fixture) {
+        var key = fixture.first + ';' + fixture.second;
+
+        expect(existing[key]).to.equal(undefined);
+        existing[key] = true;
+      });
+
     });
 
   });
