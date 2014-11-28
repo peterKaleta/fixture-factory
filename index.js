@@ -5,8 +5,11 @@ var _ = require('lodash');
 
 function FixtureFactory () {
   this.dataModels = {};
-}
+  this.createdModels = {};
+}  
 
+var instance;
+   
 var _getFieldModel = function (method) {
   return !_.isFunction(method) && _.isObject(method) ? method : { method: method };
 };
@@ -44,6 +47,19 @@ var _generateField = function (key, method, fixture, dataModel) {
 
   var model = _getFieldModel(method);
   var field;
+
+  if (model.reference) {
+    var modelName = model.reference.split('.')[0];
+    var fieldName = model.reference.split('.')[1];
+
+    if (!instance.createdModels[modelName]) {
+      throw new Error('Requested model "' + modelName + '" has not yet been created');
+    }
+
+    var possibleValues = _.pluck(instance.createdModels[modelName], fieldName);
+    var index = _.random(0, possibleValues.length - 1);
+    return possibleValues[index];
+  }
 
   switch (typeof model.method) {
     case 'function':
@@ -100,11 +116,11 @@ FixtureFactory.prototype = {
   getGenerator: function (key) {
     var self = this;
     return {
-      generate: function(){
-        self.generate.apply(self, _.union([key], arguments));
+      generate: function () {
+        self.generate.apply(self, _.union([ key ], arguments));
       },
-      generateOne: function(){
-        self.generateOne.apply(self, _.union([key], arguments));
+      generateOne: function () {
+        self.generateOne.apply(self, _.union([ key ], arguments));
       }
     };
   },
@@ -132,13 +148,14 @@ FixtureFactory.prototype = {
   unregister: function (key) {
     if (key) {
       delete this.dataModels[key];
+      delete this.createdModels[key];
     } else {
       this.dataModels = {};
+      this.createdModels = {};
     }
 
     return this;
   },
-
 
   generateOne: function (context, properties) {
     return this.generate(context, 1, properties)[0];
@@ -148,17 +165,29 @@ FixtureFactory.prototype = {
     count = count || 1;
     var fixtures = [];
 
-    if(_.isObject(count)){
-        properties = count;
-        count = 1;
+    if (_.isObject(count)) {
+      properties = count;
+      count = 1;
     }
 
     while (fixtures.length < count) {
       fixtures.push(_generateFixture.call(this, context, properties));
     }
+
+    // Store the created models, for further use by references
+    if (typeof context === 'string') {
+      if (this.createdModels[context] == null) {
+        this.createdModels[context] = [];
+      }
+
+      this.createdModels[context] = this.createdModels[context].concat(fixtures);
+    }
+
     return fixtures;
   }
 
 };
 
-module.exports = new FixtureFactory();
+instance = new FixtureFactory();
+
+module.exports = instance;

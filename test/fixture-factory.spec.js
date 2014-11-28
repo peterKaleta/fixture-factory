@@ -1,7 +1,9 @@
+/* global beforeEach,afterEach */
 'use strict';
 
 // setup test env
 var chai = require('chai');
+var _ = require('lodash');
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
 var chaiThings = require('chai-things');
@@ -136,7 +138,7 @@ describe('Fixture Factory', function () {
   });
 
   describe('integration tests', function () {
-    before(function () {
+    beforeEach(function () {
       var dataModel = {
         someField: 'name.firstName'
       };
@@ -147,11 +149,17 @@ describe('Fixture Factory', function () {
         }
       };
 
+      var referencingModel = {
+        addr: 'address.streetName',
+        name: { reference: 'exampleModel.someField' }
+      };
+
       fixtureFactory.register('exampleModel', dataModel);
       fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
+      fixtureFactory.register('referencingModel', referencingModel);
     });
 
-    after(function () {
+    afterEach(function () {
       fixtureFactory.unregister();
     });
 
@@ -264,6 +272,18 @@ describe('Fixture Factory', function () {
     function () {
       var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
       expect(fixture.lastName).to.exist;
+    });
+
+    it('should provide the ability to reference from a registered model', function () {
+      var referencedFixtures = fixtureFactory.generate('exampleModel', 10);
+      var fixtures = fixtureFactory.generate('referencingModel', 20);
+
+      var names = _.pluck(referencedFixtures, 'someField');
+
+      _.forEach(fixtures, function (elemWithRef) {
+        expect(names).to.contain(elemWithRef.name);
+      });
+
     });
   });
 });
