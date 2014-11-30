@@ -20,7 +20,7 @@
   "indent": 2,
   "latedef": true,
   "maxdepth": 3,
-  "maxlen": 100,
+  "maxlen": 160,
   "newcap": true,
   "node": true,
   "noempty": true,

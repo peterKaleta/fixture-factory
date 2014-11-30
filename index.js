@@ -62,7 +62,6 @@ var _generateField = function (key, method, fixture, dataModel) {
 };
 
 var _generateFixture = function (context, properties) {
-
   properties = properties || {};
 
   var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
@@ -75,7 +74,9 @@ var _generateFixture = function (context, properties) {
     value = properties[key] ? properties[key] : value;
 
     var options;
-    if (!_.isFunction(value) && !_.isFunction(value.method)) {
+    if (_.isPlainObject(value) || _.isArray(value)) {
+      fixture[key] = value;
+    } else if (!_.isFunction(value) && !_.isFunction(value.method)) {
       options = dataModel[key] ? dataModel[key].options || {} : {};
       fixture[key] = _generateField(key, value);
     } else {
@@ -88,7 +89,6 @@ var _generateFixture = function (context, properties) {
   });
 
   return fixture;
-
 };
 
 FixtureFactory.prototype = {
@@ -100,10 +100,10 @@ FixtureFactory.prototype = {
   getGenerator: function (key) {
     var self = this;
     return {
-      generate: function(){
+      generate: function () {
         self.generate.apply(self, _.union([key], arguments));
       },
-      generateOne: function(){
+      generateOne: function () {
         self.generateOne.apply(self, _.union([key], arguments));
       }
     };
@@ -139,7 +139,6 @@ FixtureFactory.prototype = {
     return this;
   },
 
-
   generateOne: function (context, properties) {
     return this.generate(context, 1, properties)[0];
   },
@@ -148,17 +147,17 @@ FixtureFactory.prototype = {
     count = count || 1;
     var fixtures = [];
 
-    if(_.isObject(count)){
-        properties = count;
-        count = 1;
+    if (_.isObject(count)) {
+      properties = count;
+      count = 1;
     }
 
     while (fixtures.length < count) {
       fixtures.push(_generateFixture.call(this, context, properties));
     }
+
     return fixtures;
   }
-
 };
 
 module.exports = new FixtureFactory();

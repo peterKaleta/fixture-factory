@@ -38,7 +38,7 @@
   "requireBlocksOnNewline": true,
   "disallowEmptyBlocks": true,
   "requireSpacesInsideObjectBrackets": "all",
-  "requireSpacesInsideArrayBrackets": "all",
+  "disallowSpacesInsideArrayBrackets": true,
   "disallowQuotedKeysInObjects": true,
   "disallowSpaceAfterObjectKeys": true,
   "requireSpaceBeforeObjectValues": true,
