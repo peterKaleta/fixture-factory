@@ -43,8 +43,11 @@ var _handleString = function (model) {
 var _generateField = function (key, method, fixture, dataModel, generatedFixtures) {
 
   var model = _getFieldModel(method);
-  var field;
+  if (model.nest) {
+    return model.nest;
+  }
 
+  var field;
   switch (typeof model.method) {
     case 'function':
       field = _handleFunction(model, fixture, dataModel);
