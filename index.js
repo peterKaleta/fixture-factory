@@ -68,7 +68,7 @@ var _generateField = function (key, method, fixture, dataModel, generatedFixture
     })) {
       return _generateField.apply(null, arguments);
     }
-  }    
+  }
 
   return field;
 };
@@ -82,7 +82,7 @@ var _generateFixture = function (context, properties, generatedFixtures) {
 
   var collection = _.extend({}, dataModel, properties);
 
-  // The ability to make multiple fields unique together 
+  // The ability to make multiple fields unique together
   // (think combined primary keys)
   var uniqueFields;
   if (collection._unique != null) {
@@ -131,10 +131,10 @@ FixtureFactory.prototype = {
     var self = this;
     return {
       generate: function () {
-        self.generate.apply(self, _.union([ key ], arguments));
+        self.generate.apply(self, _.union([key], arguments));
       },
       generateOne: function () {
-        self.generateOne.apply(self, _.union([ key ], arguments));
+        self.generateOne.apply(self, _.union([key], arguments));
       }
     };
   },
@@ -185,9 +185,9 @@ FixtureFactory.prototype = {
     while (fixtures.length < count) {
       fixtures.push(_generateFixture.call(this, context, properties, fixtures));
     }
+
     return fixtures;
   }
-
 };
 
 module.exports = new FixtureFactory();
