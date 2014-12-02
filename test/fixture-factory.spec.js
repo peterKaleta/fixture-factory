@@ -151,10 +151,10 @@ describe('Fixture Factory', function () {
       var uniqueModel = {
         id: {
           method: 'random.number',
+          unique: true,
           options: {
             min: 1,
-            max: 100,
-            _unique: true
+            max: 100
           }
         }
       };

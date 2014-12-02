@@ -63,7 +63,7 @@ var _generateField = function (key, method, fixture, dataModel, generatedFixture
 
   // If the current field is unique, make sure
   // that it is not duplicated
-  if (model.options && model.options._unique === true) {
+  if (model.unique === true) {
 
     // Check if current value exists in fixtures generated thus far
     if (_.some(_.pluck(generatedFixtures, key), function (existingValue) {
