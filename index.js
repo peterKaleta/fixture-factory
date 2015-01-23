@@ -37,14 +37,17 @@ var _handleString = function (model) {
     }
   }
 
-  return isMethod ? nestedFakerMethod( model.options || { }) : model.method;
+  return isMethod ? nestedFakerMethod(_.cloneDeep(model.options || { })) : model.method;
 };
 
-var _generateField = function (key, method, fixture, dataModel) {
+var _generateField = function (key, method, fixture, dataModel, generatedFixtures) {
 
   var model = _getFieldModel(method);
-  var field;
+  if (model.nest) {
+    return model.nest;
+  }
 
+  var field;
   switch (typeof model.method) {
     case 'function':
       field = _handleFunction(model, fixture, dataModel);
@@ -58,35 +61,65 @@ var _generateField = function (key, method, fixture, dataModel) {
       field = model.method;
   }
 
+  // If the current field is unique, make sure
+  // that it is not duplicated
+  if (model.unique === true) {
+
+    // Check if current value exists in fixtures generated thus far
+    if (_.some(_.pluck(generatedFixtures, key), function (existingValue) {
+      return existingValue === field;
+    })) {
+      return _generateField.apply(null, arguments);
+    }
+  }
+
   return field;
 };
 
-var _generateFixture = function (context, properties) {
+var _generateFixture = function (context, properties, generatedFixtures) {
+
   properties = properties || {};
 
   var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
   var fixture = {};
 
   var collection = _.extend({}, dataModel, properties);
+
+  // The ability to make multiple fields unique together
+  // (think combined primary keys)
+  var uniqueFields;
+  if (collection._unique != null) {
+    uniqueFields = collection._unique;
+    delete collection._unique;
+  }
+
   var fns = {};
 
   _.each(collection, function (value, key) {
     value = properties[key] ? properties[key] : value;
 
-    var options;
-    if (_.isPlainObject(value) || _.isArray(value)) {
-      fixture[key] = value;
-    } else if (!_.isFunction(value) && !_.isFunction(value.method)) {
-      options = dataModel[key] ? dataModel[key].options || {} : {};
-      fixture[key] = _generateField(key, value);
+    if (!_.isFunction(value) && !_.isFunction(value.method)) {
+      fixture[key] = _generateField(key, value, undefined, undefined, generatedFixtures);
     } else {
       fns[key] = value;
     }
   });
 
   _.each(fns, function (value, key) {
-    fixture[key] = _generateField(key, value, fixture, dataModel);
+    fixture[key] = _generateField(key, value, fixture, dataModel, generatedFixtures);
   });
+
+  if (uniqueFields) {
+    var nonUniqueFixtures = _.reduce(uniqueFields, function (fixturesLeft, field) {
+      return _.filter(fixturesLeft, function (generatedFixture) {
+        return generatedFixture[field] === fixture[field];
+      });
+    }, generatedFixtures);
+
+    if (nonUniqueFixtures.length > 0) {
+      return _generateFixture.apply(this, arguments);
+    }
+  }
 
   return fixture;
 };
@@ -153,7 +186,7 @@ FixtureFactory.prototype = {
     }
 
     while (fixtures.length < count) {
-      fixtures.push(_generateFixture.call(this, context, properties));
+      fixtures.push(_generateFixture.call(this, context, properties, fixtures));
     }
 
     return fixtures;

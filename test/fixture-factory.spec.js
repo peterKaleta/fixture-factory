@@ -3,6 +3,7 @@
 // setup test env
 var chai = require('chai');
 var sinon = require('sinon');
+var _ = require('lodash');
 var sinonChai = require('sinon-chai');
 var chaiThings = require('chai-things');
 var expect = chai.expect;
@@ -147,8 +148,46 @@ describe('Fixture Factory', function () {
         }
       };
 
+      var uniqueModel = {
+        id: {
+          method: 'random.number',
+          unique: true,
+          options: {
+            min: 1,
+            max: 100
+          }
+        }
+      };
+
+      var combinedUnique = {
+        first: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 10
+          }
+        },
+        second: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 10
+          }
+        },
+        third: {
+          method: 'random.number',
+          options: {
+            min: 1,
+            max: 5
+          }
+        },
+        _unique: ['first', 'second']
+      };
+
       fixtureFactory.register('exampleModel', dataModel);
       fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
+      fixtureFactory.register('uniqueModel', uniqueModel);
+      fixtureFactory.register('combinedUnique', combinedUnique);
     });
 
     after(function () {
@@ -259,17 +298,40 @@ describe('Fixture Factory', function () {
       expect(fixture.fullName).to.equal(fixture.firstName + ' ' + fixture.lastName);
     });
 
-    it('in case object is passed as context it should be used as model for generation', function () {
+    it('in case object is passed as context it should be used as model for generation',
+        function () {
       var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
       expect(fixture.lastName).to.exist;
     });
 
+    it('should be able to generate unique fields', function () {
+      var fixtures = fixtureFactory.generate('uniqueModel', 50);
+      var ids = _.pluck(fixtures, 'id');
+
+      expect(_.uniq(ids).length).to.equal(ids.length);
+    });
+
+    it('should be able to generate combined unique fields', function () {
+      var fixtures = fixtureFactory.generate('combinedUnique', 100);
+
+      var existing = {};
+      _.forEach(fixtures, function (fixture) {
+        var key = fixture.first + ';' + fixture.second;
+
+        expect(existing[key]).to.equal(undefined);
+        existing[key] = true;
+      });
+
+    });
+
     it('should generate single model with nested child model', function () {
       var fixture = fixtureFactory.generateOne({
-        child: fixtureFactory.generateOne({
-          firstName: 'name.firstName',
-          lastName: 'name.lastName'
-        })
+        child: {
+          nest: fixtureFactory.generateOne({
+            firstName: 'name.firstName',
+            lastName: 'name.lastName'
+          })
+        }
       });
 
       expect(fixture.child.firstName).to.exist;
@@ -278,10 +340,12 @@ describe('Fixture Factory', function () {
 
     it('should generate single model with nested children array', function () {
       var fixture = fixtureFactory.generateOne({
-        children: fixtureFactory.generate({
-          firstName: 'name.firstName',
-          lastName: 'name.lastName'
-        }, 10)
+        children: {
+          nest: fixtureFactory.generate({
+            firstName: 'name.firstName',
+            lastName: 'name.lastName'
+          }, 10)
+        }
       });
 
       expect(fixture.children.length).to.equal(10);
@@ -289,16 +353,19 @@ describe('Fixture Factory', function () {
       fixture.children.should.all.have.property('lastName');
     });
 
-    it('should preserve ability to generate function based fakes while using nested models', function () {
+    it('should preserve ability to generate function based fakes while using nested models',
+       function () {
       var fixture = fixtureFactory.generateOne({
-        child: fixtureFactory.generateOne({
-          firstName: function () {
-            return 'John';
-          },
-          lastName: function () {
-            return 'Doe';
-          }
-        })
+        child: {
+          nest: fixtureFactory.generateOne({
+            firstName: function () {
+              return 'John';
+            },
+            lastName: function () {
+              return 'Doe';
+            }
+          })
+        }
       });
 
       expect(fixture.child.firstName).to.equal('John');
@@ -307,30 +374,37 @@ describe('Fixture Factory', function () {
 
     it('should preserve string/function generation order while using nested models', function () {
       var fixture = fixtureFactory.generateOne({
-        child: fixtureFactory.generateOne({
-          fullName: function (fixture) {
-            expect(fixture).to.be.a('object');
-            expect(fixture.firstName).to.be.a('string');
-            expect(fixture.lastName).to.be.a('string');
-            return fixture.firstName + ' ' + fixture.lastName;
-          },
-          firstName: 'name.firstName',
-          lastName: 'name.lastName'
-        })
+        child: {
+          nest: fixtureFactory.generateOne({
+            fullName: function (fixture) {
+              expect(fixture).to.be.a('object');
+              expect(fixture.firstName).to.be.a('string');
+              expect(fixture.lastName).to.be.a('string');
+              return fixture.firstName + ' ' + fixture.lastName;
+            },
+            firstName: 'name.firstName',
+            lastName: 'name.lastName'
+          })
+        }
       });
 
-      expect(fixture.child.fullName).to.equal(fixture.child.firstName + ' ' + fixture.child.lastName);
+      expect(fixture.child.fullName).to.equal(
+        fixture.child.firstName + ' ' + fixture.child.lastName);
     });
 
     it('should generate single model with multiply nested child models', function () {
       var fixture = fixtureFactory.generateOne({
-        child: fixtureFactory.generateOne({
-          names: fixtureFactory.generateOne({
-            firstName: 'name.firstName',
-            secondName: 'name.firstName'
-          }),
-          lastName: 'name.lastName'
-        })
+        child: {
+          nest: fixtureFactory.generateOne({
+            names: {
+              nest: fixtureFactory.generateOne({
+                firstName: 'name.firstName',
+                secondName: 'name.firstName'
+              })
+            },
+            lastName: 'name.lastName'
+          })
+        }
       });
 
       expect(fixture.child.names.firstName).to.exist;
@@ -340,11 +414,15 @@ describe('Fixture Factory', function () {
 
     it('should generate single model with multiply nested children array', function () {
       var fixture = fixtureFactory.generateOne({
-        children: fixtureFactory.generate({
-          colors: fixtureFactory.generate({
-            name: 'internet.color'
+        children: {
+          nest: fixtureFactory.generate({
+            colors: {
+              nest: fixtureFactory.generate({
+                name: 'internet.color'
+              }, 10)
+            }
           }, 10)
-        }, 10)
+        }
       });
 
       expect(fixture.children.length).to.equal(10);
