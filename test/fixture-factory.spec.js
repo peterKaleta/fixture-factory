@@ -1,9 +1,10 @@
+/* global beforeEach,afterEach */
 'use strict';
 
 // setup test env
 var chai = require('chai');
-var sinon = require('sinon');
 var _ = require('lodash');
+var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
 var chaiThings = require('chai-things');
 var expect = chai.expect;
@@ -137,7 +138,7 @@ describe('Fixture Factory', function () {
   });
 
   describe('integration tests', function () {
-    before(function () {
+    beforeEach(function () {
       var dataModel = {
         someField: 'name.firstName'
       };
@@ -146,6 +147,11 @@ describe('Fixture Factory', function () {
         someField: function () {
           return 'mam';
         }
+      };
+
+      var referencingModel = {
+        addr: 'address.streetName',
+        name: { reference: 'exampleModel.someField' }
       };
 
       var uniqueModel = {
@@ -187,10 +193,11 @@ describe('Fixture Factory', function () {
       fixtureFactory.register('exampleModel', dataModel);
       fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
       fixtureFactory.register('uniqueModel', uniqueModel);
+      fixtureFactory.register('referencingModel', referencingModel);
       fixtureFactory.register('combinedUnique', combinedUnique);
     });
 
-    after(function () {
+    afterEach(function () {
       fixtureFactory.unregister();
     });
 
@@ -240,6 +247,7 @@ describe('Fixture Factory', function () {
       });
 
       expect(fixtures[0].someField).to.equal('overwritenValue');
+
     });
 
     it('should delegate field generation to faker.js', function () {
@@ -299,9 +307,21 @@ describe('Fixture Factory', function () {
     });
 
     it('in case object is passed as context it should be used as model for generation',
-        function () {
+    function () {
       var fixture = fixtureFactory.generateOne({ lastName: 'name.lastName' });
       expect(fixture.lastName).to.exist;
+    });
+
+    it('should provide the ability to reference from a registered model', function () {
+      var referencedFixtures = fixtureFactory.generate('exampleModel', 10);
+      var fixtures = fixtureFactory.generate('referencingModel', 20);
+
+      var names = _.pluck(referencedFixtures, 'someField');
+
+      _.forEach(fixtures, function (elemWithRef) {
+        expect(names).to.contain(elemWithRef.name);
+      });
+
     });
 
     it('should be able to generate unique fields', function () {

@@ -3,8 +3,11 @@
 var faker = require('faker');
 var _ = require('lodash');
 
+var instance;
+
 function FixtureFactory () {
   this.dataModels = {};
+  this.createdModels = {};
 }
 
 var _getFieldModel = function (method) {
@@ -48,6 +51,20 @@ var _generateField = function (key, method, fixture, dataModel, generatedFixture
   }
 
   var field;
+
+  if (model.reference) {
+    var modelName = model.reference.split('.')[0];
+    var fieldName = model.reference.split('.')[1];
+
+    if (!instance.createdModels[modelName]) {
+      throw new Error('Requested model "' + modelName + '" has not yet been created');
+    }
+
+    var possibleValues = _.pluck(instance.createdModels[modelName], fieldName);
+    var index = _.random(0, possibleValues.length - 1);
+    return possibleValues[index];
+  }
+
   switch (typeof model.method) {
     case 'function':
       field = _handleFunction(model, fixture, dataModel);
@@ -98,7 +115,9 @@ var _generateFixture = function (context, properties, generatedFixtures) {
   _.each(collection, function (value, key) {
     value = properties[key] ? properties[key] : value;
 
+    var options;
     if (!_.isFunction(value) && !_.isFunction(value.method)) {
+      options = dataModel[key] ? dataModel[key].options || {} : {};
       fixture[key] = _generateField(key, value, undefined, undefined, generatedFixtures);
     } else {
       fns[key] = value;
@@ -122,6 +141,7 @@ var _generateFixture = function (context, properties, generatedFixtures) {
   }
 
   return fixture;
+
 };
 
 FixtureFactory.prototype = {
@@ -165,8 +185,10 @@ FixtureFactory.prototype = {
   unregister: function (key) {
     if (key) {
       delete this.dataModels[key];
+      delete this.createdModels[key];
     } else {
       this.dataModels = {};
+      this.createdModels = {};
     }
 
     return this;
@@ -189,8 +211,20 @@ FixtureFactory.prototype = {
       fixtures.push(_generateFixture.call(this, context, properties, fixtures));
     }
 
+    // Store the created models, for further use by references
+    if (typeof context === 'string') {
+      if (this.createdModels[context] == null) {
+        this.createdModels[context] = [];
+      }
+
+      this.createdModels[context] = this.createdModels[context].concat(fixtures);
+    }
+
     return fixtures;
   }
+
 };
 
-module.exports = new FixtureFactory();
+instance = new FixtureFactory();
+
+module.exports = instance;
