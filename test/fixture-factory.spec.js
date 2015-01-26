@@ -187,7 +187,7 @@ describe('Fixture Factory', function () {
             max: 5
           }
         },
-        _unique: ['first', 'second']
+        _combinedUnique: ['first', 'second']
       };
 
       fixtureFactory.register('exampleModel', dataModel);
