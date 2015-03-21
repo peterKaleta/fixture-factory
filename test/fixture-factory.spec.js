@@ -452,5 +452,30 @@ describe('Fixture Factory', function () {
       });
       fixture.children.should.all.have.property('colors');
     });
+    
+    it('should support nested objects',
+    function () {
+      var fixture = fixtureFactory.generateOne({
+        levels: {
+          one: {
+            field: 'internet.email',
+            two: {
+              field: 'internet.email',
+            }
+          }
+        }
+      });
+
+      var one = fixture.levels.one;
+      var two = one.two;
+
+      expect(one).to.exist;
+      expect(one.field).to.be.a('string');
+      expect(one.field).to.have.string('@');
+      expect(two).to.exist;
+      expect(two.field).to.be.a('string');
+      expect(two.field).to.have.string('@');
+      expect(two.field).to.not.equal(one.field);
+    });
   });
 });
