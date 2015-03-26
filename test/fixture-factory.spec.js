@@ -14,6 +14,7 @@ chai.should();
 
 // load things to test
 var fixtureFactory = require('../index.js');
+var referencePlugin = require('../plugins/reference');
 var faker = require('faker');
 
 describe('Fixture Factory', function () {
@@ -38,10 +39,91 @@ describe('Fixture Factory', function () {
       expect(fixtureFactory.getGenerator).to.be.a('function');
     });
 
-    it('should register a return itself on register', function () {
+    it('should register and return itself on register', function () {
       expect(fixtureFactory.register('..', {})).to.equal(fixtureFactory);
     });
 
+  });
+
+  describe.only('Reference Plugin', function () {
+    it('should have a enable method', function () {
+      expect(referencePlugin.enable).to.be.a('function');
+    });
+
+    it('should have a disable method', function () {
+      expect(referencePlugin.disable).to.be.a('function');
+    });
+
+    describe('integration tests', function () {
+      before(function () {
+        var dataModel = {
+          someField: 'name.firstName'
+        };
+
+        var dataModelWithFn = {
+          someField: function () {
+            return 'mam';
+          }
+        };
+
+        var referencingModel = {
+          addr: 'address.streetName',
+          name: 'model.exampleModelWithFn.someField',
+          data: 'model.exampleModel',
+          props: {
+            method: 'model.exampleModel',
+            reference: {
+              properties: {
+                id: 'random.uuid'
+              }
+            }
+          }
+        };
+
+        fixtureFactory.register('exampleModel', dataModel);
+        fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
+        fixtureFactory.register('referencingModel', referencingModel);
+      });
+
+      it('should provide the ability to reference another model field', function () {
+        var fixtures = fixtureFactory.generate('referencingModel', 20);
+
+        expect(fixtures.length).to.equal(20);
+
+        _.forEach(fixtures, function (fixture) {
+          expect(fixture.name).to.be.a('string');
+        });
+      });
+
+      it('should provide the ability to pass properties to another model', function () {
+        var fixture = fixtureFactory.generateOne('referencingModel');
+
+        console.log(fixture);
+
+        expect(fixture.props.id).to.exist;
+        expect(fixture.props.id).to.be.a('string');
+        expect(fixture.props.someField).to.be.a('string');
+      });
+
+      it('should provide the ability to reference another model', function () {
+        var fixtures = fixtureFactory.generate('referencingModel', 20);
+
+        expect(fixtures.length).to.equal(20);
+
+        _.forEach(fixtures, function (fixture) {
+          expect(fixture.data).to.be.a('object');
+          expect(fixture.data.someField).to.be.a('string');
+        });
+      });
+
+      it('should be able to be disabled', function () {
+        referencePlugin.disable(fixtureFactory);
+        var fixture = fixtureFactory.generateOne('referencingModel');
+
+        expect(fixture.name).to.equal('model.exampleModelWithFn.someField');
+        expect(fixture.data).to.equal('model.exampleModel');
+      });
+    });
   });
 
   describe('unit tests', function () {
@@ -151,50 +233,13 @@ describe('Fixture Factory', function () {
 
       var referencingModel = {
         addr: 'address.streetName',
-        name: { reference: 'exampleModel.someField' }
-      };
-
-      var uniqueModel = {
-        id: {
-          method: 'random.number',
-          unique: true,
-          options: {
-            min: 1,
-            max: 100
-          }
-        }
-      };
-
-      var combinedUnique = {
-        first: {
-          method: 'random.number',
-          options: {
-            min: 1,
-            max: 10
-          }
-        },
-        second: {
-          method: 'random.number',
-          options: {
-            min: 1,
-            max: 10
-          }
-        },
-        third: {
-          method: 'random.number',
-          options: {
-            min: 1,
-            max: 5
-          }
-        },
-        _combinedUnique: ['first', 'second']
+        name: 'model.exampleModel.someField',
+        data: 'model.exampleModel'
       };
 
       fixtureFactory.register('exampleModel', dataModel);
       fixtureFactory.register('exampleModelWithFn', dataModelWithFn);
-      fixtureFactory.register('uniqueModel', uniqueModel);
       fixtureFactory.register('referencingModel', referencingModel);
-      fixtureFactory.register('combinedUnique', combinedUnique);
     });
 
     afterEach(function () {
@@ -312,45 +357,11 @@ describe('Fixture Factory', function () {
       expect(fixture.lastName).to.exist;
     });
 
-    it('should provide the ability to reference from a registered model', function () {
-      var referencedFixtures = fixtureFactory.generate('exampleModel', 10);
-      var fixtures = fixtureFactory.generate('referencingModel', 20);
-
-      var names = _.pluck(referencedFixtures, 'someField');
-
-      _.forEach(fixtures, function (elemWithRef) {
-        expect(names).to.contain(elemWithRef.name);
-      });
-
-    });
-
-    it('should be able to generate unique fields', function () {
-      var fixtures = fixtureFactory.generate('uniqueModel', 50);
-      var ids = _.pluck(fixtures, 'id');
-
-      expect(_.uniq(ids).length).to.equal(ids.length);
-    });
-
-    it('should be able to generate combined unique fields', function () {
-      var fixtures = fixtureFactory.generate('combinedUnique', 100);
-
-      var existing = {};
-      _.forEach(fixtures, function (fixture) {
-        var key = fixture.first + ';' + fixture.second;
-
-        expect(existing[key]).to.equal(undefined);
-        existing[key] = true;
-      });
-
-    });
-
     it('should generate single model with nested child model', function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          nest: fixtureFactory.generateOne({
-            firstName: 'name.firstName',
-            lastName: 'name.lastName'
-          })
+          firstName: 'name.firstName',
+          lastName: 'name.lastName'
         }
       });
 
@@ -360,12 +371,10 @@ describe('Fixture Factory', function () {
 
     it('should generate single model with nested children array', function () {
       var fixture = fixtureFactory.generateOne({
-        children: {
-          nest: fixtureFactory.generate({
+        children: [{
             firstName: 'name.firstName',
             lastName: 'name.lastName'
-          }, 10)
-        }
+          }, 10]
       });
 
       expect(fixture.children.length).to.equal(10);
@@ -377,14 +386,12 @@ describe('Fixture Factory', function () {
        function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          nest: fixtureFactory.generateOne({
-            firstName: function () {
-              return 'John';
-            },
-            lastName: function () {
-              return 'Doe';
-            }
-          })
+          firstName: function () {
+            return 'John';
+          },
+          lastName: function () {
+            return 'Doe';
+          }
         }
       });
 
@@ -395,16 +402,14 @@ describe('Fixture Factory', function () {
     it('should preserve string/function generation order while using nested models', function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          nest: fixtureFactory.generateOne({
-            fullName: function (fixture) {
-              expect(fixture).to.be.a('object');
-              expect(fixture.firstName).to.be.a('string');
-              expect(fixture.lastName).to.be.a('string');
-              return fixture.firstName + ' ' + fixture.lastName;
-            },
-            firstName: 'name.firstName',
-            lastName: 'name.lastName'
-          })
+          fullName: function (fixture) {
+            expect(fixture).to.be.a('object');
+            expect(fixture.firstName).to.be.a('string');
+            expect(fixture.lastName).to.be.a('string');
+            return fixture.firstName + ' ' + fixture.lastName;
+          },
+          firstName: 'name.firstName',
+          lastName: 'name.lastName'
         }
       });
 
@@ -415,15 +420,11 @@ describe('Fixture Factory', function () {
     it('should generate single model with multiply nested child models', function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          nest: fixtureFactory.generateOne({
-            names: {
-              nest: fixtureFactory.generateOne({
-                firstName: 'name.firstName',
-                secondName: 'name.firstName'
-              })
-            },
-            lastName: 'name.lastName'
-          })
+          names: {
+            firstName: 'name.firstName',
+            secondName: 'name.firstName'
+          },
+          lastName: 'name.lastName'
         }
       });
 
@@ -434,15 +435,13 @@ describe('Fixture Factory', function () {
 
     it('should generate single model with multiply nested children array', function () {
       var fixture = fixtureFactory.generateOne({
-        children: {
-          nest: fixtureFactory.generate({
-            colors: {
-              nest: fixtureFactory.generate({
+        children: [
+          {
+            colors: [
+              {
                 name: 'internet.color'
-              }, 10)
-            }
-          }, 10)
-        }
+              }, 10]
+          }, 10]
       });
 
       expect(fixture.children.length).to.equal(10);
