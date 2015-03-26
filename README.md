@@ -256,8 +256,8 @@ Expected Output
 
 ## Reference Plugin
 
-The Reference plugin an examle extension of the fixture factory that allows
-embeding other models into your models. It is enabled by default.
+The Reference plugin is an example extension of the fixture factory that allows
+embeding other models into your definition. It is enabled by default.
 
 #### Embed another model in your fixture
 
