@@ -33,8 +33,6 @@ function transform(event) {
       model = _transform(model, split);
     }
   }
-
-  return model;
 }
 
 module.exports.enable = function (fixtureFactory) {
