@@ -45,7 +45,7 @@ describe('Fixture Factory', function () {
 
   });
 
-  describe.only('Reference Plugin', function () {
+  describe('Reference Plugin', function () {
     it('should have a enable method', function () {
       expect(referencePlugin.enable).to.be.a('function');
     });
@@ -97,8 +97,6 @@ describe('Fixture Factory', function () {
 
       it('should provide the ability to pass properties to another model', function () {
         var fixture = fixtureFactory.generateOne('referencingModel');
-
-        console.log(fixture);
 
         expect(fixture.props.id).to.exist;
         expect(fixture.props.id).to.be.a('string');

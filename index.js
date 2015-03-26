@@ -51,44 +51,17 @@ FixtureFactory.prototype._handleString = function (model) {
   return isMethod ? nestedFakerMethod(options) : model.method;
 };
 
-FixtureFactory.prototype._formatNest = function (nested) {
-  var result = {};
-
-  if (_.isArray(nested)) {
-    result.context = nested[0];
-    result.count = nested[1] || 1;
-  } else if (_.isString(nested)) {
-    split = nested.split('.');
-    result.context = this.dataModels[split[0]];
-
-    if (split.length === 2) {
-      result.context = {};
-      result.context[split[1]] = this.dataModels[split[0]][split[1]];
-    }
-  } else if (nested.context){
-    result = nested;
-  } else {
-
-  }
-
-  return result;
-};
-
 FixtureFactory.prototype._generateField = function (
   key, method, fixture, dataModel, generatedFixtures
 ) {
   var fieldModel = this._getFieldModel(method);
-  var count;
+  var count = 1;
   var field;
 
   this.emit('field:pre', {
     name: key,
     model: fieldModel
   });
-
-  console.log(fieldModel);
-
-  var count = 1;
 
   switch (typeof fieldModel.method) {
     case 'function':
