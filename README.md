@@ -26,7 +26,7 @@ fixtureFactory('user', userDataModel);
 fixtureFactory.generateOne('user');
 ```
 
-will generate
+Expected Output
 
 ```
 {
@@ -39,7 +39,7 @@ will generate
 ```
 fixtureFactory.generate('user', 10);
 ```
-will generate
+Expected Output
 
 ```
 [{
@@ -47,6 +47,66 @@ will generate
   lastName: <generated last name>
 }, ... 9 more
 ]
+```
+
+### Generate nested objects
+
+```
+fixtureFactory.register('user',{
+    type: 'admin',
+    firstName: 'Daniel',
+    role: {
+        id: 'random.uuid',
+        name: 'internet.userName'
+    }
+  });
+
+fixtureFactory.generateOne('user');
+```
+
+Expected Output
+
+```
+{ type: 'admin',
+  firstName: 'Daniel',
+  role:
+  {
+     id: '15751f0a-569d-4789-89cc-8f7c8405f007',
+     name: 'German_Glover10'
+  }
+}
+```
+
+### Generate array of nested objects
+
+```
+fixtureFactory.register('user',{
+    type: 'admin',
+    firstName: 'Daniel',
+    roles: [{
+        id: 'random.uuid',
+        name: 'internet.userName'
+    }, 10]
+  });
+
+fixtureFactory.generateOne('user');
+```
+
+Expected Output
+
+```
+{ type: 'admin',
+  firstName: 'Daniel',
+  roles:
+  [
+     {
+       id: '1b8df9da-3f1a-4f9b-ab96-1de8cc4844c5',
+       name: 'Dawn_Dooley30'
+     },
+     ... 9 more
+  ]
+}
+
 ```
 
 ### Generate with extra fields
@@ -58,7 +118,7 @@ fixtureFactory.generate('user',1 ,{
   });
 ```
 
-will generate
+Expected Output
 
 ```
 {
@@ -75,7 +135,7 @@ fixtureFactory.generateOne({
   email: 'internet.email'
   });
 ```
-will generate
+Expected Output
 
 ```
 {
@@ -108,7 +168,7 @@ var userDataModel = {
 fixtureFactory.register('user', userDataModel);
 fixtureFactory.generateOne('user');
 ```
-will generate
+Expected Output
 ```
 {
  staticField: 'someValue'
@@ -132,7 +192,7 @@ var userDataModel = {
 fixtureFactory.register('user', userDataModel);
 fixtureFactory.generateOne('user');
 ```
-will generate
+Expected Output
 ```
 {
  staticField: '<generated name>@acme.com'
@@ -159,7 +219,7 @@ var userDataModel = {
 fixtureFactory.register('user', userDataModel);
 fixtureFactory.generateOne();
 ```
-will generate
+Expected Output
 ```
 {
  age: <number between 18 and 90>
@@ -187,16 +247,119 @@ fixtureFactory.generateOne('user', {
 });
 
 ```
-will generate
+Expected Output
 ```
 {
  firstName: 'sir <some generated name>'
 }
 ```
 
+## Reference Plugin
 
+The Reference plugin is an example extension of the fixture factory that allows
+embeding other models into your definition. It is enabled by default.
 
+#### Embed another model in your fixture
 
+```
+fixtureFactory.register('user',{
+  type: 'admin',
+  firstName: 'Daniel'
+});
+
+fixtureFactory.register('role',{
+  id: 'random.uuid',
+  name: 'internet.userName'
+});
+
+fixtureFactory.generateOne('user', {
+  role: 'model.role'  
+});
+```
+
+Expected Output
+
+```
+{
+  type: 'admin',
+  firstName: 'Daniel',
+  role:
+  {
+     id: '15751f0a-569d-4789-89cc-8f7c8405f007',
+     name: 'German_Glover10'
+  }
+}
+
+```
+
+#### Embed another model in your fixture and provide properties
+
+```
+fixtureFactory.register('user',{
+  type: 'admin',
+  firstName: 'Daniel'
+});
+
+fixtureFactory.register('role',{
+  id: 'random.uuid',
+  name: 'internet.userName'
+});
+
+fixtureFactory.generateOne('user', {
+  role: {
+    method: 'model.role',
+    reference: {
+      properties: {
+        active: true
+      }
+    }
+  }
+});
+```
+
+Expected Output
+
+```
+{
+  type: 'admin',
+  firstName: 'Daniel',
+  role:
+  {
+    id: '8b23b7f8-c14b-4231-a768-5ecc407a5821',
+    name: 'Dianna36',
+    active: true
+  }
+}
+
+```
+
+#### Embed another model field in your fixture
+
+```
+fixtureFactory.register('user',{
+  type: 'admin',
+  firstName: 'Daniel'
+});
+
+fixtureFactory.register('role',{
+  id: 'random.uuid',
+  name: 'internet.userName'
+});
+
+fixtureFactory.generateOne('user', {
+  roleId: 'model.role.id'  
+});
+```
+
+Expected Output
+
+```
+{
+  type: 'admin',
+  firstName: 'Daniel',
+  roleId: '17b6ec69-606d-4e97-b2c5-4eb9b3507e32'
+}
+```
 
 ## TO DO
 - add support for defining own generators

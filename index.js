@@ -2,19 +2,26 @@
 
 var faker = require('faker');
 var _ = require('lodash');
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+var referencePlugin = require('./plugins/reference');
 
 var instance;
 
 function FixtureFactory () {
   this.dataModels = {};
-  this.createdModels = {};
+  EventEmitter.call(this);
+  referencePlugin.enable(this);
 }
 
-var _getFieldModel = function (method) {
-  return !_.isFunction(method) && _.isObject(method) ? method : { method: method };
+util.inherits(FixtureFactory, EventEmitter);
+
+FixtureFactory.prototype._getFieldModel = function (method) {
+  var transform = !_.isFunction(method) && _.isObject(method) && method.method;
+  return transform ? method : { method: method };
 };
 
-var _handleFunction = function (model, fixture, dataModel) {
+FixtureFactory.prototype._handleFunction = function (model, fixture, dataModel) {
   return model.method.call(
     null,
     fixture,
@@ -24,10 +31,11 @@ var _handleFunction = function (model, fixture, dataModel) {
   );
 };
 
-var _handleString = function (model) {
+FixtureFactory.prototype._handleString = function (model) {
   var callStack = model.method.split('.');
   var nestedFakerMethod = faker;
   var isMethod = true;
+  var options = model.options ? _.cloneDeep(model.options) : void 0;
   var nextMethod;
 
   while (callStack.length) {
@@ -40,88 +48,78 @@ var _handleString = function (model) {
     }
   }
 
-  return isMethod ? nestedFakerMethod(_.cloneDeep(model.options || { })) : model.method;
+  return isMethod ? nestedFakerMethod(options) : model.method;
 };
 
-var _generateField = function (key, method, fixture, dataModel, generatedFixtures) {
-
-  var fieldModel = _getFieldModel(method);
+FixtureFactory.prototype._generateField = function (
+  key, method, fixture, dataModel, generatedFixtures
+) {
+  var fieldModel = this._getFieldModel(method);
+  var count = 1;
   var field;
 
-  // if the field has a nested object - return it
-  if (fieldModel.nest) {
-    return fieldModel.nest;
-  }
-
-  if (fieldModel.reference) {
-
-    var split = fieldModel.reference.split('.');
-    var referencedModelName = split[0];
-    var referencedFieldName = split[1];
-
-    // check if model of given name was already generated
-    if (!instance.createdModels[referencedModelName]) {
-      throw new Error('Requested model "' + referencedModelName + '" has not yet been created');
-    }
-
-    // randomly pick and return one of values of referenced field from all referenced models
-    var possibleValues = _.pluck(instance.createdModels[referencedModelName], referencedFieldName);
-    var index = _.random(0, possibleValues.length - 1);
-
-    return possibleValues[index];
-
-  }
+  this.emit('field:pre', {
+    name: key,
+    model: fieldModel
+  });
 
   switch (typeof fieldModel.method) {
-
     case 'function':
-      field = _handleFunction(fieldModel, fixture, dataModel);
+      field = this._handleFunction(fieldModel, fixture, dataModel);
       break;
 
     case 'string':
-      field = _handleString(fieldModel);
+      field = this._handleString(fieldModel);
+      break;
+
+    case 'number':
+    case 'boolean':
+      field = fieldModel.method;
       break;
 
     // method is an object so just return it
     default :
-      field = fieldModel.method;
+      if (_.isArray(fieldModel.method)) {
+        count = fieldModel.method[1] || 1;
+      } else {
+        fieldModel.method = [fieldModel.method];
+      }
+
+      field = this.generate.apply(this, fieldModel.method);
+
+      if (count === 1) {
+        field = field[0];
+      }
   }
 
-  // If the current field is unique, make sure
-  // that it is not duplicated
-  if (fieldModel.unique === true) {
-
-    // Check if current value exists in fixtures generated thus far
-    if (_.some(_.pluck(generatedFixtures, key), function (existingValue) {
-      return existingValue === field;
-    })) {
-      return _generateField.apply(null, arguments);
-    }
-  }
+  this.emit('field', {
+    name: key,
+    value: field,
+    model: fieldModel
+  });
 
   return field;
 };
 
-var _generateFixture = function (context, properties, generatedFixtures) {
-
-  properties = properties || {};
-
+FixtureFactory.prototype._generateFixture = function (context, properties, generatedFixtures) {
   // check if raw model definition was passed or should we fetch it from the registered ones
   var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
+  var name = _.isObject(context) ? void 0 : context;
   var fixture = {};
+  var fieldGenerators = {};
+  var self = this;
+
+  properties = properties || {};
 
   // if user passed additional properties extend the dataModel with them
   dataModel = _.extend({}, dataModel, properties);
 
-  // check if we need to worry about combined unique fields later
-  // combined unique as pairs of keys etc
-  var uniqueFields;
-  if (dataModel._combinedUnique != null) {
-    uniqueFields = dataModel._combinedUnique;
-    delete dataModel._combinedUnique;
-  }
-
-  var fieldGenerators = {};
+  this.emit('fixture:pre', {
+    model: dataModel,
+    name: name,
+    properties: properties,
+    generated: generatedFixtures
+  });
 
   _.each(dataModel, function (value, key) {
 
@@ -129,124 +127,103 @@ var _generateFixture = function (context, properties, generatedFixtures) {
 
     // if field has a generator function assigned to it, cache it for later
     if (!_.isFunction(value) && !_.isFunction(value.method)) {
-      fixture[key] = _generateField(key, value, fixture, dataModel, generatedFixtures);
+      fixture[key] = self._generateField(key, value, fixture, dataModel, generatedFixtures);
     } else {
       fieldGenerators[key] = value;
     }
-
   });
 
   _.each(fieldGenerators, function (fieldGenerator, key) {
-    fixture[key] = _generateField(key, fieldGenerator, fixture, dataModel, generatedFixtures);
+    fixture[key] = self._generateField(
+      key,
+      fieldGenerator,
+      fixture,
+      dataModel,
+      generatedFixtures
+    );
   });
 
-  if (uniqueFields) {
-
-    // check if there are not matching sets of combined uniquer values
-    var notUnique = !!_.some(generatedFixtures, function (generatedFixture) {
-      return _.every(uniqueFields, function (uniqueField) {
-        return generatedFixture[uniqueField] === fixture[uniqueField];
-      });
-    });
-
-    // if it does generate the whole fixture again
-    if (notUnique) {
-      return _generateFixture.apply(this, arguments);
-    }
-
-  }
+  this.emit('fixture', {
+    fixture: fixture,
+    name: name,
+    properties: properties,
+    generated: generatedFixtures
+  });
 
   return fixture;
-
 };
 
-FixtureFactory.prototype = {
+FixtureFactory.prototype.noConflict = function () {
+  return new FixtureFactory();
+};
 
-  noConflict: function () {
-    return new FixtureFactory();
-  },
+FixtureFactory.prototype.getGenerator = function (key) {
+  var self = this;
 
-  getGenerator: function (key) {
-
-    var self = this;
-
-    return {
-      generate: function () {
-        self.generate.apply(self, _.union([key], arguments));
-      },
-      generateOne: function () {
-        self.generateOne.apply(self, _.union([key], arguments));
-      }
-    };
-
-  },
-
-  register: function (key, dataModel) {
-
-    var models;
-
-    if (typeof key === 'string') {
-      models = {};
-      models[key] = dataModel;
-    }  else {
-      models = key;
+  return {
+    generate: function () {
+      self.generate.apply(self, _.union([key], arguments));
+    },
+    generateOne: function () {
+      self.generateOne.apply(self, _.union([key], arguments));
     }
+  };
+};
 
-    _.extend(this.dataModels, models);
+FixtureFactory.prototype.register = function (key, dataModel) {
+  var models = {};
+  var isString = typeof key === 'string';
 
-    return this;
-
-  },
-
-  reset: function () {
-    this.unregister();
-  },
-
-  unregister: function (key) {
-
-    if (key) {
-      delete this.dataModels[key];
-      delete this.createdModels[key];
-    } else {
-      this.dataModels = {};
-      this.createdModels = {};
-    }
-
-    return this;
-
-  },
-
-  generateOne: function (context, properties) {
-    return this.generate(context, 1, properties)[0];
-  },
-
-  generate: function (context, count, properties) {
-
-    count = count || 1;
-    var fixtures = [];
-
-    if (_.isObject(count)) {
-      properties = count;
-      count = 1;
-    }
-
-    while (fixtures.length < count) {
-      fixtures.push(_generateFixture.call(this, context, properties, fixtures));
-    }
-
-    // Store the created models, for further use by references
-    if (typeof context === 'string') {
-
-      if (this.createdModels[context] == null) {
-        this.createdModels[context] = [];
-      }
-
-      this.createdModels[context] = this.createdModels[context].concat(fixtures);
-    }
-
-    return fixtures;
+  if (isString) {
+    models[key] = dataModel;
+  }  else {
+    models = key;
   }
 
+  _.extend(this.dataModels, models);
+
+  this.emit('registered', models);
+
+  return this;
+};
+
+FixtureFactory.prototype.reset = function () {
+  this.unregister();
+};
+
+FixtureFactory.prototype.unregister = function (key) {
+  if (key) {
+    delete this.dataModels[key];
+    this.emit('unregistered', [key]);
+  } else {
+    this.emit('unregistered', Object.keys(this.dataModels));
+    this.dataModels = {};
+  }
+
+  return this;
+};
+
+FixtureFactory.prototype.generateOne = function (context, properties) {
+  var fixture = this.generate(context, 1, properties)[0];
+
+  return fixture;
+};
+
+FixtureFactory.prototype.generate = function (context, count, properties) {
+  var fixtures = [];
+
+  count = count || 1;
+
+  if (_.isObject(count)) {
+    properties = count;
+    count = 1;
+  }
+
+  while (fixtures.length < count) {
+    fixtures.push(this._generateFixture(context, properties, fixtures));
+  }
+
+  return fixtures;
 };
 
 instance = new FixtureFactory();
