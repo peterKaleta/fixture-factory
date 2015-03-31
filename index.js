@@ -79,16 +79,20 @@ FixtureFactory.prototype._generateField = function (
 
     // method is an object so just return it
     default :
-      if (_.isArray(fieldModel.method)) {
-        count = fieldModel.method[1] || 1;
+      if (fieldModel.method !== null) {
+        if (_.isArray(fieldModel.method)) {
+          count = fieldModel.method[1] || 1;
+        } else {
+          fieldModel.method = [fieldModel.method];
+        }
+
+        field = this.generate.apply(this, fieldModel.method);
+
+        if (count === 1) {
+          field = field[0];
+        }
       } else {
-        fieldModel.method = [fieldModel.method];
-      }
-
-      field = this.generate.apply(this, fieldModel.method);
-
-      if (count === 1) {
-        field = field[0];
+        field = null;
       }
   }
 

@@ -30,7 +30,7 @@ function transform(event) {
   if (isRef) {
     split = model.method.split('.');
     if (split[0] === 'model') {
-      model = _transform(model, split);
+      _transform(model, split);
     }
   }
 }
