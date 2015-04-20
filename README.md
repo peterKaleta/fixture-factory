@@ -201,7 +201,7 @@ Expected Output
 
 #### passing options to  [faker.js](https://github.com/marak/Faker.js/) methods
 
-if given method requires additional parameters you can pass it by adding `options` parameter
+if given method requires additional parameters you can pass it by adding `args` property
 
 ```
 var fixtureFactory = require('fixture-factory');
@@ -209,10 +209,12 @@ var fixtureFactory = require('fixture-factory');
 var userDataModel = {
   age: {
     method: 'random.number',
-    options: {
-      min: 18,
-      max: 90
-    }
+    args: [
+      {
+        min: 18,
+        max: 90
+      }
+    ]
   }
 };
 

@@ -35,8 +35,15 @@ FixtureFactory.prototype._handleString = function (model) {
   var callStack = model.method.split('.');
   var nestedFakerMethod = faker;
   var isMethod = true;
+  var args = model.args || [];
   var options = model.options ? _.cloneDeep(model.options) : void 0;
   var nextMethod;
+
+  if (options) {
+    console.warn('Passing arguments to faker using the "options" property has been depreciated.')
+    console.warn('Please use "args" property instead.')
+    args.push(options);
+  }
 
   while (callStack.length) {
     nextMethod = callStack.shift();
@@ -48,7 +55,9 @@ FixtureFactory.prototype._handleString = function (model) {
     }
   }
 
-  return isMethod ? nestedFakerMethod(options) : model.method;
+  console.log(args);
+
+  return isMethod ? nestedFakerMethod.apply(nestedFakerMethod, args) : model.method;
 };
 
 FixtureFactory.prototype._generateField = function (
