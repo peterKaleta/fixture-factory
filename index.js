@@ -40,8 +40,8 @@ FixtureFactory.prototype._handleString = function (model) {
   var nextMethod;
 
   if (options) {
-    console.warn('Passing arguments to faker using the "options" property has been depreciated.')
-    console.warn('Please use "args" property instead.')
+    console.warn('Passing arguments to faker using the "options" property has been depreciated.');
+    console.warn('Please use "args" property instead.');
     args.push(options);
   }
 
@@ -54,8 +54,6 @@ FixtureFactory.prototype._handleString = function (model) {
       break;
     }
   }
-
-  console.log(args);
 
   return isMethod ? nestedFakerMethod.apply(nestedFakerMethod, args) : model.method;
 };
