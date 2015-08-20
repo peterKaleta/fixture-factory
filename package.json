@@ -6,7 +6,7 @@
   "author": "Peter Kaleta <peter.kaleta@x-team.com> (http://peterkaleta.com)",
   "main": "index.js",
   "scripts": {
-    "test": "jshint . && jscs . && mocha"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,8 @@
     "jscs": "^1.7.3",
     "mocha": "^2.0.0",
     "sinon": "^1.10.3",
-    "sinon-chai": "^2.6.0"
+    "sinon-chai": "^2.6.0",
+    "jshint": "^2.8.0"
   },
   "dependencies": {
     "faker": "^2.0.1",
