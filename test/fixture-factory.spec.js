@@ -430,24 +430,6 @@ describe('Fixture Factory', function () {
       expect(fixture.child.names.secondName).to.exist;
       expect(fixture.child.lastName).to.exist;
     });
-
-    it('should generate single model with multiply nested children array', function () {
-      var fixture = fixtureFactory.generateOne({
-        children: [
-          {
-            colors: [
-              {
-                name: 'internet.color'
-              }, 10]
-          }, 10]
-      });
-
-      expect(fixture.children.length).to.equal(10);
-      fixture.children.forEach(function (child) {
-        expect(child.colors.length).to.equal(10);
-        child.colors.should.all.have.property('name');
-      });
-      fixture.children.should.all.have.property('colors');
-    });
+    
   });
 });
