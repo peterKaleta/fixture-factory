@@ -4,7 +4,7 @@
   "description": "Factory for faker.js fixture generator",
   "license": "MIT",
   "author": "Peter Kaleta <peter.kaleta@x-team.com> (http://peterkaleta.com)",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "make test"
   },
