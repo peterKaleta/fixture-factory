@@ -24,7 +24,7 @@ function _transform(model, split) {
 
 function transform(event) {
   var model = event.model;
-  var isRef = _.isString(model.method) &&  model.method.indexOf('model') === 0;
+  var isRef = _.isString(model.method) && model.method.indexOf('model') === 0;
   var split;
 
   if (isRef) {

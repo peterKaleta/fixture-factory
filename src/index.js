@@ -168,10 +168,10 @@ FixtureFactory.prototype.getGenerator = function (key) {
   var self = this;
 
   return {
-    generate: function () {
+    generate() {
       self.generate.apply(self, _.union([key], arguments));
     },
-    generateOne: function () {
+    generateOne() {
       self.generateOne.apply(self, _.union([key], arguments));
     }
   };
@@ -183,7 +183,7 @@ FixtureFactory.prototype.register = function (key, dataModel) {
 
   if (isString) {
     models[key] = dataModel;
-  }  else {
+  } else {
     models = key;
   }
 

@@ -61,7 +61,7 @@ describe('Fixture Factory', function () {
         };
 
         var dataModelWithFn = {
-          someField: function () {
+          someField() {
             return 'mam';
           }
         };
@@ -224,7 +224,7 @@ describe('Fixture Factory', function () {
       };
 
       var dataModelWithFn = {
-        someField: function () {
+        someField() {
           return 'mam';
         }
       };
@@ -251,7 +251,7 @@ describe('Fixture Factory', function () {
 
     it('should generate single fixture based on provided dataModel object', function () {
       var fixture = fixtureFactory.generateOne({
-        someField: function () {
+        someField() {
           return 'mam';
         }
       });
@@ -268,7 +268,7 @@ describe('Fixture Factory', function () {
     it('should generate array of fixtures based on selected dataModel', function () {
       var fixtures = fixtureFactory.generate(
         {
-          someField: function () {
+          someField() {
             return 'mam';
           }
         },
@@ -312,7 +312,7 @@ describe('Fixture Factory', function () {
 
     it('should use passed parser functions to process fixture output', function () {
       var fixture = fixtureFactory.generateOne('exampleModel', {
-        lastName: function () {
+        lastName() {
           return 'sir';
         }
       });
@@ -326,7 +326,7 @@ describe('Fixture Factory', function () {
 
     it('should use functions in properties to overwrite function in data model', function () {
       var fixture = fixtureFactory.generateOne('exampleModelWithFn', {
-        someField: function () {
+        someField() {
           return 'sir';
         }
       });
@@ -336,7 +336,7 @@ describe('Fixture Factory', function () {
 
     it('should process static properties before functions', function () {
       var fixture = fixtureFactory.generateOne({
-        fullName: function (fixture) {
+        fullName(fixture) {
           expect(fixture).to.be.a('object');
           expect(fixture.firstName).to.be.a('string');
           expect(fixture.lastName).to.be.a('string');
@@ -384,10 +384,10 @@ describe('Fixture Factory', function () {
        function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          firstName: function () {
+          firstName() {
             return 'John';
           },
-          lastName: function () {
+          lastName() {
             return 'Doe';
           }
         }
@@ -400,7 +400,7 @@ describe('Fixture Factory', function () {
     it('should preserve string/function generation order while using nested models', function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          fullName: function (fixture) {
+          fullName(fixture) {
             expect(fixture).to.be.a('object');
             expect(fixture.firstName).to.be.a('string');
             expect(fixture.lastName).to.be.a('string');
@@ -430,6 +430,6 @@ describe('Fixture Factory', function () {
       expect(fixture.child.names.secondName).to.exist;
       expect(fixture.child.lastName).to.exist;
     });
-    
+
   });
 });
