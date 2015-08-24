@@ -1,16 +1,27 @@
-JSHINT = node_modules/.bin/jshint
-JSCS = node_modules/.bin/jscs
-MOCHA = node_modules/.bin/mocha
-.PHONY: test ocha jscs jshint
+.PHONY: clean build init setup-hooks lint test test-watch
+
+clean:
+	rm -rf ./dist
+
+init:
+	make install
+	make setup-hooks
+
+install:
+	./scripts/install.sh
+
+setup-hooks:
+	./scripts/setup-hooks.sh
+
+build:
+	make clean
+	./scripts/build.sh
+
+lint:
+	./scripts/lint.sh
 
 test:
-	make jscs && make jshint && make mocha
+	./scripts/test.sh
 
-mocha:
-	$(MOCHA)
-
-jscs:
-	$(JSCS) .
-
-jshint:
-	$(JSHINT) .
+test-watch:
+	./scripts/test.watch.sh
