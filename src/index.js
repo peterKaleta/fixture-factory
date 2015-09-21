@@ -215,15 +215,15 @@ class FixtureFactory extends EventEmitter {
     return fixture;
   }
 
-  generate(context, count, properties) {
-    var fixtures = [];
-
-    count = count || 1;
+  generate(context, count = 1, properties) {
 
     if (_.isObject(count)) {
       properties = count;
       count = 1;
     }
+
+    
+    let fixtures = [];
 
     while (fixtures.length < count) {
       fixtures.push(this._generateFixture(context, properties, fixtures));

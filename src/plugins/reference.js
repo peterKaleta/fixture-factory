@@ -39,6 +39,7 @@ module.exports.enable = function (fixtureFactory) {
   factory = fixtureFactory;
 
   fixtureFactory.on('field:pre', transform);
+
 };
 
 module.exports.disable = function (fixtureFactory) {

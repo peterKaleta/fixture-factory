@@ -431,5 +431,12 @@ describe('Fixture Factory', function () {
       expect(fixture.child.lastName).to.exist;
     });
 
+    it.only('faker', function(done){
+      console.log(Object.keys(faker));
+      console.log(Object.keys(faker.internet));
+
+      done();
+    })
+
   });
 });
