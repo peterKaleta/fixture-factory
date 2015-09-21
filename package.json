@@ -22,7 +22,7 @@
     "jshint": "^2.8.0"
   },
   "dependencies": {
-    "faker": "^2.0.1",
+    "faker": "^3.0.1",
     "lodash": "^2.4.1"
   }
 }
