@@ -14,9 +14,9 @@ chai.should();
 
 // load things to test
 var fixtureFactory = require('../index.js');
-var referencePlugin = require('../plugins/reference');
+var Reference = require('../plugins').Reference;
 var faker = require('faker');
-
+var referencePlugin;
 describe('Fixture Factory', function () {
   describe('Module', function () {
     it('should have a register method', function () {
@@ -46,6 +46,12 @@ describe('Fixture Factory', function () {
   });
 
   describe('Reference Plugin', function () {
+
+    beforeEach(function() {
+      referencePlugin = new Reference(fixtureFactory);
+
+    });
+
     it('should have a enable method', function () {
       expect(referencePlugin.enable).to.be.a('function');
     });

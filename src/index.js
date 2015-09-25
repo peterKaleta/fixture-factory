@@ -1,15 +1,16 @@
 import faker from 'faker';
 import {extend, isObject, isFunction, cloneDeep, isArray, each} from 'lodash';
 import {EventEmitter} from 'events';
-import referencePlugin from './plugins/reference';
+import {Reference} from './plugins';
 
 class FixtureFactory extends EventEmitter {
 
   dataModels = {}
+  plugins = []
 
   constructor() {
     super();
-    referencePlugin.enable(this);
+    this.plugins.push[new Reference(this)];
   }
 
   //generators, internals, stuff

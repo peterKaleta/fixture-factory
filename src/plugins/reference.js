@@ -1,48 +1,57 @@
-'use strict';
+import {extend, isString} from 'lodash';
 
-var _ = require('lodash');
-var factory;
+export default class ReferencePlugin {
 
-function _transform(model, split) {
-  var models = factory.dataModels;
-
-  model.method = models[split[1]];
-
-  if (split.length === 2) {
-    if (model.reference && model.reference.properties) {
-      model.method = _.extend(
-        model.method,
-        model.reference.properties
-      );
-    }
-  } else {
-    model.method = models[split[1]][split[2]];
+  constructor(fixtureFactory) {
+    this.fixtureFactory = fixtureFactory;
+    this.enable();
   }
 
-  return model;
-}
+  //internals, stuff
 
-function transform(event) {
-  var model = event.model;
-  var isRef = _.isString(model.method) && model.method.indexOf('model') === 0;
-  var split;
+  transform(model, split) {
 
-  if (isRef) {
-    split = model.method.split('.');
-    if (split[0] === 'model') {
-      model = _transform(model, split);
+    const {dataModels: models} = this.fixtureFactory;
+
+    model.method = models[split[1]];
+
+    if (split.length === 2) {
+      if (model.reference && model.reference.properties) {
+        model.method = extend(
+          model.method,
+          model.reference.properties
+        );
+      }
+    } else {
+      model.method = models[split[1]][split[2]];
     }
+
+    return model;
   }
+
+  //api
+
+  fixtureFactoryWillGenerateField(event) {
+
+    let {model} = event;
+    var isRef = isString(model.method) && model.method.indexOf('model') === 0;
+    var split;
+
+    if (isRef) {
+      split = model.method.split('.');
+      if (split[0] === 'model') {
+        model = this._transform(model, split);
+      }
+    }
+
+  }
+
+  enable() {
+    this.fixtureFactory.on('field:pre', this.fixtureFactoryWillGenerateField);
+  }
+
+  disable() {
+    this.fixtureFactory.removeListener('field:pre', this.fixtureFactoryWillGenerateField);
+  }
+
 }
-
-module.exports.enable = function (fixtureFactory) {
-  factory = fixtureFactory;
-
-  fixtureFactory.on('field:pre', transform);
-
-};
-
-module.exports.disable = function (fixtureFactory) {
-  factory.removeListener('field:pre', transform);
-  factory = null;
-};
