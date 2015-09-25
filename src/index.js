@@ -1,11 +1,7 @@
-'use strict';
-
 import faker from 'faker';
 import {extend, isObject, isFunction, cloneDeep, isArray, each} from 'lodash';
 import {EventEmitter} from 'events';
 import referencePlugin from './plugins/reference';
-
-var instance;
 
 class FixtureFactory extends EventEmitter {
 
@@ -28,7 +24,7 @@ class FixtureFactory extends EventEmitter {
     return model.method.call(
       null,
       fixture,
-      model.options || {},
+      model.args || model.options || {},
       dataModel,
       faker
     );
@@ -239,6 +235,4 @@ class FixtureFactory extends EventEmitter {
 
 }
 
-instance = new FixtureFactory();
-
-module.exports = instance;
+export default new FixtureFactory();
