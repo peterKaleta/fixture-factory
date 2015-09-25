@@ -437,9 +437,9 @@ describe('Fixture Factory', function () {
       expect(fixture.child.lastName).to.exist;
     });
 
-    it('faker', function(done){
+    it('faker', function(done) {
       done();
-    })
+    });
 
   });
 });

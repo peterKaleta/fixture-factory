@@ -1,6 +1,6 @@
 {
   "changelogCommand": "",
-  "buildCommand": "make test",
+  "buildCommand": "make test && make build",
   "github": {
    "release": true,
    "tokenRef": "GITHUB_TOKEN"
