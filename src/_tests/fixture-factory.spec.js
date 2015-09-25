@@ -188,10 +188,16 @@ describe('Fixture Factory', function () {
 
     describe('getGenerator', function () {
       it('should return object with delegated generate and generateOne functions', function () {
+
         fixtureFactory.register('testModel', {});
+        fixtureFactory.register('testModel1', {});
+        fixtureFactory.register('testModel2', {});
+        fixtureFactory.register('testModel3', {});
         var testModelGenerator = fixtureFactory.getGenerator('testModel');
+
         expect(testModelGenerator.generate).to.be.a('function');
         expect(testModelGenerator.generateOne).to.be.a('function');
+
       });
       it('should return object that delegates to factory method using set key', function () {
         fixtureFactory.register('testModel', {});
