@@ -8,7 +8,7 @@ var referencePlugin = require('./plugins/reference');
 
 var instance;
 
-function FixtureFactory () {
+function FixtureFactory() {
   this.dataModels = {};
   EventEmitter.call(this);
   referencePlugin.enable(this);
@@ -22,13 +22,7 @@ FixtureFactory.prototype._getFieldModel = function (method) {
 };
 
 FixtureFactory.prototype._handleFunction = function (model, fixture, dataModel) {
-  return model.method.call(
-    null,
-    fixture,
-    model.options || {},
-    dataModel,
-    faker
-  );
+  return model.method.call(null, fixture, model.options || {}, dataModel, faker);
 };
 
 FixtureFactory.prototype._handleString = function (model) {
@@ -58,9 +52,7 @@ FixtureFactory.prototype._handleString = function (model) {
   return isMethod ? nestedFakerMethod.apply(nestedFakerMethod, args) : model.method;
 };
 
-FixtureFactory.prototype._generateField = function (
-  key, method, fixture, dataModel, generatedFixtures
-) {
+FixtureFactory.prototype._generateField = function (key, method, fixture, dataModel, generatedFixtures) {
   var fieldModel = this._getFieldModel(method);
   var count = 1;
   var field;
@@ -85,7 +77,7 @@ FixtureFactory.prototype._generateField = function (
       break;
 
     // method is an object so just return it
-    default :
+    default:
       if (_.isArray(fieldModel.method)) {
         count = fieldModel.method[1] || 1;
       } else {
@@ -141,13 +133,7 @@ FixtureFactory.prototype._generateFixture = function (context, properties, gener
   });
 
   _.each(fieldGenerators, function (fieldGenerator, key) {
-    fixture[key] = self._generateField(
-      key,
-      fieldGenerator,
-      fixture,
-      dataModel,
-      generatedFixtures
-    );
+    fixture[key] = self._generateField(key, fieldGenerator, fixture, dataModel, generatedFixtures);
   });
 
   this.emit('fixture', {
@@ -168,10 +154,10 @@ FixtureFactory.prototype.getGenerator = function (key) {
   var self = this;
 
   return {
-    generate: function () {
+    generate: function generate() {
       self.generate.apply(self, _.union([key], arguments));
     },
-    generateOne: function () {
+    generateOne: function generateOne() {
       self.generateOne.apply(self, _.union([key], arguments));
     }
   };
@@ -183,7 +169,7 @@ FixtureFactory.prototype.register = function (key, dataModel) {
 
   if (isString) {
     models[key] = dataModel;
-  }  else {
+  } else {
     models = key;
   }
 

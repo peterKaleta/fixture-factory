@@ -10,10 +10,7 @@ function _transform(model, split) {
 
   if (split.length === 2) {
     if (model.reference && model.reference.properties) {
-      model.method = _.extend(
-        model.method,
-        model.reference.properties
-      );
+      model.method = _.extend(model.method, model.reference.properties);
     }
   } else {
     model.method = models[split[1]][split[2]];
@@ -24,7 +21,7 @@ function _transform(model, split) {
 
 function transform(event) {
   var model = event.model;
-  var isRef = _.isString(model.method) &&  model.method.indexOf('model') === 0;
+  var isRef = _.isString(model.method) && model.method.indexOf('model') === 0;
   var split;
 
   if (isRef) {

@@ -4,25 +4,31 @@
   "description": "Factory for faker.js fixture generator",
   "license": "MIT",
   "author": "Peter Kaleta <peter.kaleta@x-team.com> (http://peterkaleta.com)",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "make test"
+    "test": "make lint && make test"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/colonyamerican/fixture-factory.git"
   },
-  "devDependencies": {
-    "chai": "^1.9.2",
-    "chai-things": "^0.2.0",
-    "jscs": "^1.7.3",
-    "mocha": "^2.0.0",
-    "sinon": "^1.10.3",
-    "sinon-chai": "^2.6.0",
-    "jshint": "^2.8.0"
-  },
   "dependencies": {
     "faker": "^3.0.1",
-    "lodash": "^2.4.1"
+    "babel": "^5.8.21",
+    "babel-core": "^5.8.22",
+    "babel-eslint": "^4.0.10",
+    "babel-loader": "^5.3.2",
+    "babel-runtime": "^5.8.20",
+    "path": "^0.11.14",
+    "lodash": "^3.10.1",
+    "webpack": "^1.11.0",
+    "chai": "^3.2.0",
+    "eslint": "^1.2.1",
+    "mocha": "^2.2.5",
+    "mocha-babel": "^3.0.0",
+    "sinon": "^1.10.3",
+    "sinon-chai": "^2.6.0",
+    "chai": "^1.9.2",
+    "chai-things": "^0.2.0"
   }
 }

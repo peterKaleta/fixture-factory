@@ -1,21 +1,22 @@
 /* global beforeEach,afterEach */
-'use strict';
 
 // setup test env
-var chai = require('chai');
-var _ = require('lodash');
-var sinon = require('sinon');
-var sinonChai = require('sinon-chai');
-var chaiThings = require('chai-things');
-var expect = chai.expect;
+import chai, {expect} from 'chai';
+import _ from 'lodash';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+import chaiThings from 'chai-things';
+
 chai.use(chaiThings);
 chai.use(sinonChai);
 chai.should();
 
 // load things to test
-var fixtureFactory = require('../index.js');
-var referencePlugin = require('../plugins/reference');
-var faker = require('faker');
+import fixtureFactory from '../index.js';
+import {Reference} from '../plugins';
+import faker from 'faker';
+
+let referencePlugin;
 
 describe('Fixture Factory', function () {
   describe('Module', function () {
@@ -46,6 +47,11 @@ describe('Fixture Factory', function () {
   });
 
   describe('Reference Plugin', function () {
+
+    before(function() {
+      referencePlugin = new Reference(fixtureFactory);
+    });
+
     it('should have a enable method', function () {
       expect(referencePlugin.enable).to.be.a('function');
     });
@@ -61,7 +67,7 @@ describe('Fixture Factory', function () {
         };
 
         var dataModelWithFn = {
-          someField: function () {
+          someField() {
             return 'mam';
           }
         };
@@ -115,7 +121,8 @@ describe('Fixture Factory', function () {
       });
 
       it('should be able to be disabled', function () {
-        referencePlugin.disable(fixtureFactory);
+        referencePlugin.disable();
+        fixtureFactory.plugins.reference.disable();
         var fixture = fixtureFactory.generateOne('referencingModel');
 
         expect(fixture.name).to.equal('model.exampleModelWithFn.someField');
@@ -188,10 +195,16 @@ describe('Fixture Factory', function () {
 
     describe('getGenerator', function () {
       it('should return object with delegated generate and generateOne functions', function () {
+
         fixtureFactory.register('testModel', {});
+        fixtureFactory.register('testModel1', {});
+        fixtureFactory.register('testModel2', {});
+        fixtureFactory.register('testModel3', {});
         var testModelGenerator = fixtureFactory.getGenerator('testModel');
+
         expect(testModelGenerator.generate).to.be.a('function');
         expect(testModelGenerator.generateOne).to.be.a('function');
+
       });
       it('should return object that delegates to factory method using set key', function () {
         fixtureFactory.register('testModel', {});
@@ -224,7 +237,7 @@ describe('Fixture Factory', function () {
       };
 
       var dataModelWithFn = {
-        someField: function () {
+        someField() {
           return 'mam';
         }
       };
@@ -251,7 +264,7 @@ describe('Fixture Factory', function () {
 
     it('should generate single fixture based on provided dataModel object', function () {
       var fixture = fixtureFactory.generateOne({
-        someField: function () {
+        someField() {
           return 'mam';
         }
       });
@@ -268,7 +281,7 @@ describe('Fixture Factory', function () {
     it('should generate array of fixtures based on selected dataModel', function () {
       var fixtures = fixtureFactory.generate(
         {
-          someField: function () {
+          someField() {
             return 'mam';
           }
         },
@@ -312,7 +325,7 @@ describe('Fixture Factory', function () {
 
     it('should use passed parser functions to process fixture output', function () {
       var fixture = fixtureFactory.generateOne('exampleModel', {
-        lastName: function () {
+        lastName() {
           return 'sir';
         }
       });
@@ -326,7 +339,7 @@ describe('Fixture Factory', function () {
 
     it('should use functions in properties to overwrite function in data model', function () {
       var fixture = fixtureFactory.generateOne('exampleModelWithFn', {
-        someField: function () {
+        someField() {
           return 'sir';
         }
       });
@@ -336,7 +349,7 @@ describe('Fixture Factory', function () {
 
     it('should process static properties before functions', function () {
       var fixture = fixtureFactory.generateOne({
-        fullName: function (fixture) {
+        fullName(fixture) {
           expect(fixture).to.be.a('object');
           expect(fixture.firstName).to.be.a('string');
           expect(fixture.lastName).to.be.a('string');
@@ -384,10 +397,10 @@ describe('Fixture Factory', function () {
        function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          firstName: function () {
+          firstName() {
             return 'John';
           },
-          lastName: function () {
+          lastName() {
             return 'Doe';
           }
         }
@@ -400,7 +413,7 @@ describe('Fixture Factory', function () {
     it('should preserve string/function generation order while using nested models', function () {
       var fixture = fixtureFactory.generateOne({
         child: {
-          fullName: function (fixture) {
+          fullName(fixture) {
             expect(fixture).to.be.a('object');
             expect(fixture.firstName).to.be.a('string');
             expect(fixture.lastName).to.be.a('string');
@@ -430,6 +443,10 @@ describe('Fixture Factory', function () {
       expect(fixture.child.names.secondName).to.exist;
       expect(fixture.child.lastName).to.exist;
     });
-    
+
+    it('faker', function(done) {
+      done();
+    });
+
   });
 });
