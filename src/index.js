@@ -18,7 +18,7 @@ class FixtureFactory extends EventEmitter {
 
   //generators, internals, stuff
 
-  _getFieldModel(method) {
+  _parseFieldModel(method) {
     //check if passed method is a shorthhand, if yes parse it to proper field model
     const isProperFieldModel = !isFunction(method) && isObject(method) && method.method;
     return isProperFieldModel ? method : { method: method };
@@ -35,15 +35,16 @@ class FixtureFactory extends EventEmitter {
   }
 
   _handleString(model) {
-    var callStack = model.method.split('.');
-    var nestedFakerMethod = faker;
-    var isMethod = true;
-    var args = model.args || [];
-    var options = model.options ? cloneDeep(model.options) : void 0;
-    var nextMethod;
+
+    let callStack = model.method.split('.');
+    let nestedFakerMethod = faker;
+    let isMethod = true;
+    let args = model.args || [];
+    let options = model.options ? cloneDeep(model.options) : void 0;
+    let nextMethod;
 
     if (options) {
-      console.warn('Passing arguments to faker using the "options" property has been depreciated.');
+      console.warn('Passing arguments to faker using the "options" property has been deprecated.');
       console.warn('Please use "args" property instead.');
       args.push(options);
     }
@@ -58,12 +59,12 @@ class FixtureFactory extends EventEmitter {
       }
     }
 
-    return isMethod ? nestedFakerMethod.apply(nestedFakerMethod, args) : model.method;
+    return isMethod ? nestedFakerMethod(...args) : model.method;
   }
 
   _generateField(name, method, fixture, dataModel, generatedFixtures) {
 
-    const fieldModel = this._getFieldModel(method);
+    const fieldModel = this._parseFieldModel(method);
 
     let count = 1;
     let field;
