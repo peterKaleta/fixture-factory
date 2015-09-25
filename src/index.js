@@ -6,11 +6,11 @@ import {Reference} from './plugins';
 class FixtureFactory extends EventEmitter {
 
   dataModels = {}
-  plugins = []
+  plugins = {}
 
   constructor() {
     super();
-    this.plugins.push[new Reference(this)];
+    this.plugins.reference = new Reference(this);
   }
 
   //generators, internals, stuff

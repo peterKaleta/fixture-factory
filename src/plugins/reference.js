@@ -9,7 +9,7 @@ export default class ReferencePlugin {
 
   //internals, stuff
 
-  transform(model, split) {
+  _transform(model, split) {
 
     const {dataModels: models} = this.fixtureFactory;
 
@@ -31,8 +31,7 @@ export default class ReferencePlugin {
 
   //api
 
-  fixtureFactoryWillGenerateField(event) {
-
+  fixtureFactoryWillGenerateField = event => {
     let {model} = event;
     var isRef = isString(model.method) && model.method.indexOf('model') === 0;
     var split;

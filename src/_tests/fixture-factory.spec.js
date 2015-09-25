@@ -1,22 +1,23 @@
 /* global beforeEach,afterEach */
-'use strict';
 
 // setup test env
-var chai = require('chai');
-var _ = require('lodash');
-var sinon = require('sinon');
-var sinonChai = require('sinon-chai');
-var chaiThings = require('chai-things');
-var expect = chai.expect;
+import chai, {expect} from 'chai';
+import _ from 'lodash';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+import chaiThings from 'chai-things';
+
 chai.use(chaiThings);
 chai.use(sinonChai);
 chai.should();
 
 // load things to test
-var fixtureFactory = require('../index.js');
-var Reference = require('../plugins').Reference;
-var faker = require('faker');
-var referencePlugin;
+import fixtureFactory from '../index.js';
+import {Reference} from '../plugins';
+import faker from 'faker';
+
+let referencePlugin;
+
 describe('Fixture Factory', function () {
   describe('Module', function () {
     it('should have a register method', function () {
@@ -47,9 +48,8 @@ describe('Fixture Factory', function () {
 
   describe('Reference Plugin', function () {
 
-    beforeEach(function() {
+    before(function() {
       referencePlugin = new Reference(fixtureFactory);
-
     });
 
     it('should have a enable method', function () {
@@ -121,7 +121,8 @@ describe('Fixture Factory', function () {
       });
 
       it('should be able to be disabled', function () {
-        referencePlugin.disable(fixtureFactory);
+        referencePlugin.disable();
+        fixtureFactory.plugins.reference.disable();
         var fixture = fixtureFactory.generateOne('referencingModel');
 
         expect(fixture.name).to.equal('model.exampleModelWithFn.someField');
