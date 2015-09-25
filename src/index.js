@@ -1,9 +1,9 @@
 'use strict';
 
-var faker = require('faker');
-var _ = require('lodash');
-var EventEmitter = require('events').EventEmitter;
-var referencePlugin = require('./plugins/reference');
+import faker from 'faker';
+import {extend, isObject, isFunction, union, cloneDeep, isArray, each} from 'lodash';
+import {EventEmitter} from 'events';
+import referencePlugin from './plugins/reference';
 
 var instance;
 
@@ -18,7 +18,7 @@ class FixtureFactory extends EventEmitter {
   }
 
   _getFieldModel(method) {
-    var transform = !_.isFunction(method) && _.isObject(method) && method.method;
+    var transform = !isFunction(method) && isObject(method) && method.method;
     return transform ? method : { method: method };
   }
 
@@ -37,7 +37,7 @@ class FixtureFactory extends EventEmitter {
     var nestedFakerMethod = faker;
     var isMethod = true;
     var args = model.args || [];
-    var options = model.options ? _.cloneDeep(model.options) : void 0;
+    var options = model.options ? cloneDeep(model.options) : void 0;
     var nextMethod;
 
     if (options) {
@@ -87,7 +87,7 @@ class FixtureFactory extends EventEmitter {
 
       // method is an object so just return it
       default :
-        if (_.isArray(fieldModel.method)) {
+        if (isArray(fieldModel.method)) {
           count = fieldModel.method[1] || 1;
         } else {
           fieldModel.method = [fieldModel.method];
@@ -111,8 +111,8 @@ class FixtureFactory extends EventEmitter {
 
   _generateFixture(context, properties, generatedFixtures) {
     // check if raw model definition was passed or should we fetch it from the registered ones
-    var dataModel = _.isObject(context) ? context : this.dataModels[context] || {};
-    var name = _.isObject(context) ? void 0 : context;
+    var dataModel = isObject(context) ? context : this.dataModels[context] || {};
+    var name = isObject(context) ? void 0 : context;
     var fixture = {};
     var fieldGenerators = {};
     var self = this;
@@ -120,7 +120,7 @@ class FixtureFactory extends EventEmitter {
     properties = properties || {};
 
     // if user passed additional properties extend the dataModel with them
-    dataModel = _.extend({}, dataModel, properties);
+    dataModel = extend({}, dataModel, properties);
 
     this.emit('fixture:pre', {
       model: dataModel,
@@ -129,19 +129,19 @@ class FixtureFactory extends EventEmitter {
       generated: generatedFixtures
     });
 
-    _.each(dataModel, function (value, key) {
+    each(dataModel, function (value, key) {
 
       value = properties[key] ? properties[key] : value;
 
       // if field has a generator function assigned to it, cache it for later
-      if (!_.isFunction(value) && !_.isFunction(value.method)) {
+      if (!isFunction(value) && !isFunction(value.method)) {
         fixture[key] = self._generateField(key, value, fixture, dataModel, generatedFixtures);
       } else {
         fieldGenerators[key] = value;
       }
     });
 
-    _.each(fieldGenerators, function (fieldGenerator, key) {
+    each(fieldGenerators, function (fieldGenerator, key) {
       fixture[key] = self._generateField(
         key,
         fieldGenerator,
@@ -170,10 +170,10 @@ class FixtureFactory extends EventEmitter {
 
     return {
       generate() {
-        self.generate.apply(self, _.union([key], arguments));
+        self.generate.apply(self, union([key], arguments));
       },
       generateOne() {
-        self.generateOne.apply(self, _.union([key], arguments));
+        self.generateOne.apply(self, union([key], arguments));
       }
     };
   }
@@ -188,7 +188,7 @@ class FixtureFactory extends EventEmitter {
       models = key;
     }
 
-    _.extend(this.dataModels, models);
+    extend(this.dataModels, models);
 
     this.emit('registered', models);
 
@@ -219,11 +219,10 @@ class FixtureFactory extends EventEmitter {
 
   generate(context, count = 1, properties) {
 
-    if (_.isObject(count)) {
+    if (isObject(count)) {
       properties = count;
       count = 1;
     }
-
 
     let fixtures = [];
 
