@@ -1,0 +1,8 @@
+{
+  "changelogCommand": "",
+  "buildCommand": "make test",
+  "github": {
+   "release": true,
+   "tokenRef": "GITHUB_TOKEN"
+  }
+}

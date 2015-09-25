@@ -17,7 +17,7 @@ var userDataModel = {
   lastName: 'name.lastName',
 };
 
-fixtureFactory('user', userDataModel);
+fixtureFactory.register('user', userDataModel);
 ```
 
 ### Generate single fixture
