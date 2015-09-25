@@ -9,9 +9,11 @@ var instance;
 
 class FixtureFactory extends EventEmitter {
 
+
+  dataModels = {}
+
   constructor() {
     super();
-    this.dataModels = {};
     referencePlugin.enable(this);
   }
 
@@ -222,7 +224,7 @@ class FixtureFactory extends EventEmitter {
       count = 1;
     }
 
-    
+
     let fixtures = [];
 
     while (fixtures.length < count) {
