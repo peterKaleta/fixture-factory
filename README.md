@@ -3,13 +3,15 @@
 Generate massive amounts of fixtures based on predefined model using [faker.js](https://github.com/marak/Faker.js/) methods.
 
 ## Installation
-```npm install fixture-factory --save-dev```
+```console
+$ npm install fixture-factory --save-dev
+```
 
 ## Usage
 
 ### Register your model
 
-```
+```js
 var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
@@ -22,13 +24,13 @@ fixtureFactory.register('user', userDataModel);
 
 ### Generate single fixture
 
-```
+```js
 fixtureFactory.generateOne('user');
 ```
 
 Expected Output
 
-```
+```js
 {
  firstName: <generated first name>,
  lastName: <generated last name>
@@ -36,23 +38,24 @@ Expected Output
 ```
 
 ### Generate multiple fixtures
-```
+```js
 fixtureFactory.generate('user', 10);
 ```
 Expected Output
 
-```
-[{
-  firstName: <generated first name>,
-  lastName: <generated last name>
-}, ... 9 more
+```js
+[
+  {
+    firstName: <generated first name>,
+    lastName: <generated last name>
+  }, ... 9 more
 ]
 ```
 
 ### Generate nested objects
 
-```
-fixtureFactory.register('user',{
+```js
+fixtureFactory.register('user', {
     type: 'admin',
     firstName: 'Daniel',
     role: {
@@ -66,8 +69,9 @@ fixtureFactory.generateOne('user');
 
 Expected Output
 
-```
-{ type: 'admin',
+```js
+{ 
+  type: 'admin',
   firstName: 'Daniel',
   role:
   {
@@ -79,8 +83,8 @@ Expected Output
 
 ### Generate array of nested objects
 
-```
-fixtureFactory.register('user',{
+```js
+fixtureFactory.register('user', {
     type: 'admin',
     firstName: 'Daniel',
     roles: [{
@@ -94,8 +98,9 @@ fixtureFactory.generateOne('user');
 
 Expected Output
 
-```
-{ type: 'admin',
+```js
+{ 
+  type: 'admin',
   firstName: 'Daniel',
   roles:
   [
@@ -111,7 +116,7 @@ Expected Output
 
 ### Generate with extra fields
 
-```
+```js
 fixtureFactory.generate('user',1 ,{
     type: 'admin',
     firstName: 'Daniel'
@@ -120,7 +125,7 @@ fixtureFactory.generate('user',1 ,{
 
 Expected Output
 
-```
+```js
 {
  firstName: 'Daniel',
  lastName: <generated last name>,
@@ -130,14 +135,14 @@ Expected Output
 
 ### Generate without registered model
 
-```
+```js
 fixtureFactory.generateOne({
   email: 'internet.email'
   });
 ```
 Expected Output
 
-```
+```js
 {
  email: <generated email>
 }
@@ -146,7 +151,7 @@ Expected Output
 ### Get your own instance
 In case you want to have multiple instances of factory you can call `noConflict`.
 
-```
+```js
 var fixtureFactory = require('fixture-factory');
 var secondFixtureFactory = fixtureFactory.noConflict();
 
@@ -158,7 +163,7 @@ var secondFixtureFactory = fixtureFactory.noConflict();
 
 If defined method won't be found in  [faker.js](https://github.com/marak/Faker.js/) it will be treated as simple string to be used as field value
 
-```
+```js
 var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
@@ -169,7 +174,7 @@ fixtureFactory.register('user', userDataModel);
 fixtureFactory.generateOne('user');
 ```
 Expected Output
-```
+```js
 {
  staticField: 'someValue'
 }
@@ -179,7 +184,7 @@ Expected Output
 
 You may define a function in the data model which will be processed after all other fixtures have been generated
 
-```
+```js
 var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
@@ -193,7 +198,7 @@ fixtureFactory.register('user', userDataModel);
 fixtureFactory.generateOne('user');
 ```
 Expected Output
-```
+```js
 {
  staticField: '<generated name>@acme.com'
 }
@@ -203,7 +208,7 @@ Expected Output
 
 if given method requires additional parameters you can pass it by adding `args` property
 
-```
+```js
 var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
@@ -222,7 +227,7 @@ fixtureFactory.register('user', userDataModel);
 fixtureFactory.generateOne();
 ```
 Expected Output
-```
+```js
 {
  age: <number between 18 and 90>
 }
@@ -233,7 +238,7 @@ Expected Output
 
 you can pass parser method to change modify value of acquired fixture field
 
-```
+```js
 var fixtureFactory = require('fixture-factory');
 
 var userDataModel = {
@@ -250,7 +255,7 @@ fixtureFactory.generateOne('user', {
 
 ```
 Expected Output
-```
+```js
 {
  firstName: 'sir <some generated name>'
 }
@@ -263,7 +268,7 @@ embeding other models into your definition. It is enabled by default.
 
 #### Embed another model in your fixture
 
-```
+```js
 fixtureFactory.register('user',{
   type: 'admin',
   firstName: 'Daniel'
@@ -281,7 +286,7 @@ fixtureFactory.generateOne('user', {
 
 Expected Output
 
-```
+```js
 {
   type: 'admin',
   firstName: 'Daniel',
@@ -296,7 +301,7 @@ Expected Output
 
 #### Embed another model in your fixture and provide properties
 
-```
+```js
 fixtureFactory.register('user',{
   type: 'admin',
   firstName: 'Daniel'
@@ -321,7 +326,7 @@ fixtureFactory.generateOne('user', {
 
 Expected Output
 
-```
+```js
 {
   type: 'admin',
   firstName: 'Daniel',
@@ -337,7 +342,7 @@ Expected Output
 
 #### Embed another model field in your fixture
 
-```
+```js
 fixtureFactory.register('user',{
   type: 'admin',
   firstName: 'Daniel'
@@ -355,7 +360,7 @@ fixtureFactory.generateOne('user', {
 
 Expected Output
 
-```
+```js
 {
   type: 'admin',
   firstName: 'Daniel',
